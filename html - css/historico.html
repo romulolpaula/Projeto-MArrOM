@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="dashboard.css" />
+    <title>Histórico - Projeto Curativo</title>
+  </head>
+  <body>
+    <div class="container-geral">
+      <aside class="sidebar">
+        <div class="logo-secao">
+          <div class="sistema-tag">SISTEMA</div>
+          <h2 class="titulo-mini">PROJETO <strong>CURATIVO</strong></h2>
+        </div>
+        <nav class="menu">
+          <a href="dashboard.html" class="item-menu">Pacientes</a>
+          <a href="historico.html" class="item-menu ativo">Histórico</a>
+          <a href="config.html" class="item-menu">Configurações</a>
+        </nav>
+        <div class="rodape-sidebar">
+          <p class="rodape-texto">Última sincronização: -</p>
+        </div>
+      </aside>
+
+      <main class="principal">
+        <header class="topo-dashboard">
+          <h1>Histórico de Leituras</h1>
+          <div class="badge-sensor">
+            Paciente Selecionado: <strong>Toshiro Cururu</strong>
+          </div>
+        </header>
+
+        <section class="conteudo-dados">
+          <div class="card" style="margin-bottom: 24px">
+            <div class="status-linha">Gráfico de Evolução Térmica</div>
+            <div
+              style="
+                height: 200px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: #b0c4ba;
+                font-family: &quot;Space Mono&quot;;
+                border: 1px dashed #d0ddd6;
+                margin-top: 15px;
+                border-radius: 8px;
+              "
+            >
+              espaço p o gráfico aqui !!!!!!!!!!!!!!
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="status-linha">Registros Recentes</div>
+            <table class="tabela-custom">
+              <thead>
+                <tr>
+                  <th>Data/Hora</th>
+                  <th>Temperatura</th>
+                  <th>Umidade</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>03/05/2026 14:30</td>
+                  <td>36.8°C</td>
+                  <td>42%</td>
+                  <td><span class="tag verde">Estável</span></td>
+                </tr>
+                <tr>
+                  <td>03/05/2026 14:15</td>
+                  <td>37.2°C</td>
+                  <td>44%</td>
+                  <td><span class="tag verde">Estável</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

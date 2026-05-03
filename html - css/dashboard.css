@@ -1,0 +1,177 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&family=Space+Mono:wght@400;700&display=swap");
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: #f4f7f5;
+  font-family: "DM Sans", sans-serif;
+  color: #0f1f14;
+}
+
+.container-geral {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  min-height: 100vh;
+}
+
+.sidebar {
+  background: #fff;
+  border-right: 1px solid #d0ddd6;
+  padding: 40px 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.sistema-tag {
+  font-family: "Space Mono", monospace;
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  color: #1d9e75;
+  margin-bottom: 8px;
+}
+
+.titulo-mini {
+  font-size: 20px;
+  font-weight: 300;
+}
+
+.titulo-mini strong {
+  color: #0f6e56;
+  font-weight: 500;
+}
+
+.menu {
+  margin-top: 50px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.item-menu {
+  text-decoration: none;
+  color: #7a9186;
+  font-size: 14px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  transition: 0.2s;
+}
+
+.item-menu.ativo,
+.item-menu:hover {
+  background: #f4f7f5;
+  color: #1d9e75;
+  font-weight: 500;
+}
+
+/* Área de Cards */
+.principal {
+  padding: 40px;
+}
+
+.topo-dashboard {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+}
+
+.badge-sensor {
+  background: #e8f5f0;
+  color: #1d9e75;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+}
+
+.grid-pacientes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+}
+
+.card {
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid #d8e8df;
+  padding: 24px;
+  transition: transform 0.2s;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+}
+
+.paciente-ativo {
+  border: 2px solid #1d9e75;
+}
+
+.status-linha {
+  font-family: "Space Mono", monospace;
+  font-size: 10px;
+  color: #1d9e75;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.status-linha.inativo {
+  color: #b0c4ba;
+}
+
+.indicadores {
+  display: flex;
+  justify-content: space-between;
+  margin: 20px 0;
+  background: #f4f7f5;
+  padding: 16px;
+  border-radius: 8px;
+}
+
+.bloco-dado span {
+  display: block;
+  font-size: 11px;
+  color: #7a9186;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.bloco-dado strong {
+  font-size: 20px;
+  color: #0f1f14;
+}
+
+.btn-vincular {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #d0ddd6;
+  border-radius: 8px;
+  background: transparent;
+  color: #7a9186;
+  font-weight: 500;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.btn-vincular.principal {
+  background: #1d9e75;
+  color: white;
+  border: none;
+}
+
+.btn-vincular:hover {
+  background: #0f6e56;
+  color: white;
+}
+
+@media (max-width: 768px) {
+  .container-geral {
+    grid-template-columns: 1fr;
+  }
+  .sidebar {
+    display: none;
+  }
+}
