@@ -2,58 +2,106 @@
 #include <Wire.h>
 #include <Adafruit_MLX90614.h>
 #include <DHT.h>
+#include <WiFi.h>
+#include <PubSubClient.h>
 
-// --- Configurações do Sensor de Umidade (DHT22) ---
-#define DHTPIN 4      // Pino digital D4 onde o 'out' do DHT22 está ligado
-#define DHTTYPE DHT22 // Define que o sensor é o DHT22
+// --- 1. CONFIGURAÇÕES DA REDE WI-FI ---
+const char* ssid = "UnivapWifi";      
+const char* password = "universidade";  
 
-// --- Criação dos Objetos dos Sensores ---
+// --- 2. CONFIGURAÇÕES DO SERVIDOR MQTT ---
+const char* mqtt_server = "broker.hivemq.com";
+const int mqtt_port = 1883;
+// Crie tópicos únicos para o seu projeto:
+const char* topic_temp = "projeto_scanner_MarRom/temperatura"; 
+const char* topic_umid = "projeto_scanner_MarRom/umidade";     
+
+// --- 3. OBJETOS ---
+WiFiClient espClient;
+PubSubClient client(espClient);
 Adafruit_MLX90614 mlx = Adafruit_MLX90614();
+#define DHTPIN 4
+#define DHTTYPE DHT22
 DHT dht(DHTPIN, DHTTYPE);
+
+// Função para conectar no Wi-Fi
+void setup_wifi() {
+  delay(10);
+  Serial.println();
+  Serial.print("Conectando na rede: ");
+  Serial.println(ssid);
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("\nWiFi conectado! IP: ");
+  Serial.println(WiFi.localIP());
+}
+
+// Função para conectar no servidor MQTT
+void reconnect() {
+  while (!client.connected()) {
+    Serial.print("Tentando conectar ao Broker HiveMQ...");
+    // Cria um ID aleatório para não dar conflito
+    String clientId = "ScannerClient-";
+    clientId += String(random(0xffff), HEX);
+    if (client.connect(clientId.c_str())) {
+      Serial.println(" Conectado à Nuvem!");
+    } else {
+      Serial.print(" Falhou, erro rc=");
+      Serial.print(client.state());
+      Serial.println(". Tentando de novo em 5s...");
+      delay(5000);
+    }
+  }
+}
 
 void setup() {
   Serial.begin(115200);
-  Serial.println("Iniciando o Scanner de Curativos...");
-  Serial.println("-----------------------------------");
-
-  // Inicia o sensor de Umidade DHT22
+  
+  // Inicia os sensores
   dht.begin();
-
-  // Força o I2C nos pinos 21 (SDA) e 22 (SCL) para o sensor de Temperatura
   Wire.begin(21, 22);
-
-  // Inicia o sensor de Temperatura MLX90614
   if (!mlx.begin()) {
-    Serial.println("ERRO: Sensor MLX90614 nao encontrado! Verifique os fios SDA e SCL.");
-    while (1); // Trava aqui se der erro
+    Serial.println("Erro: MLX90614 não encontrado!");
+    while (1);
   }
 
-  Serial.println("Sucesso! Todos os sensores estao prontos.");
-  Serial.println("Aguardando leituras...");
-  delay(2000); // Dá um tempo para o DHT22 estabilizar
+  // Conecta Wi-Fi e configura MQTT
+  setup_wifi();
+  client.setServer(mqtt_server, mqtt_port);
 }
 
 void loop() {
-  // O DHT22 é um sensor mais lento. Ele exige pelo menos 2 segundos entre as leituras.
-  delay(2000); 
-
-  // --- Lê a Umidade do DHT22 ---
-  float umidade = dht.readHumidity();
-
-  // --- Lê a Temperatura Irradiada (Alvo) do MLX90614 ---
-  float tempAlvo = mlx.readObjectTempC();
-
-  // Checa se o DHT22 conseguiu ler a umidade corretamente (isnan = is not a number)
-  if (isnan(umidade)) {
-    Serial.println("Falha na leitura da umidade (DHT22)!");
-  } else {
-    // Imprime os dados reais no Monitor Serial
-    Serial.print("Umidade da Ferida: ");
-    Serial.print(umidade);
-    Serial.print("%  |  ");
+  // Mantém a conexão MQTT viva
+  if (!client.connected()) {
+    reconnect();
   }
+  client.loop();
 
-  Serial.print("Temperatura da Ferida: ");
-  Serial.print(tempAlvo);
-  Serial.println(" °C");
+  // Envia os dados a cada 2 segundos
+  static unsigned long lastMsg = 0;
+  unsigned long now = millis();
+  if (now - lastMsg > 2000) {
+    lastMsg = now;
+
+    float umidade = dht.readHumidity();
+    float tempAlvo = mlx.readObjectTempC();
+
+    if (isnan(umidade) || isnan(tempAlvo)) {
+      Serial.println("Falha ao ler os sensores!");
+      return;
+    }
+
+    // Publica os dados na nuvem (o servidor só aceita formato de texto, por isso o String)
+    client.publish(topic_temp, String(tempAlvo).c_str());
+    client.publish(topic_umid, String(umidade).c_str());
+
+    Serial.print("Enviado p/ Nuvem -> Temp: ");
+    Serial.print(tempAlvo);
+    Serial.print(" C  |  Umidade: ");
+    Serial.print(umidade);
+    Serial.println(" %");
+  }
 }
