@@ -1,0 +1,26 @@
+// 1. Ele precisa colocar esse script no <head> do HTML:
+// <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+
+// 2. No arquivo JavaScript principal dele:
+const client = mqtt.connect('ws://broker.hivemq.com:8000/mqtt');
+
+client.on('connect', () => {
+  console.log('Site conectado ao servidor HiveMQ!');
+  // Ele avisa ao servidor quais canais ele quer escutar:
+  client.subscribe('projeto_scanner_seu_nome/temperatura');
+  client.subscribe('projeto_scanner_seu_nome/umidade');
+});
+
+client.on('message', (topic, message) => {
+  const valorDigitado = message.toString();
+  
+  // Se a mensagem chegou no canal de Temperatura, atualiza a div da temperatura
+  if(topic === 'projeto_scanner_seu_nome/temperatura') {
+    document.getElementById('id_da_div_temperatura').innerText = valorDigitado + ' °C';
+  }
+  
+  // Se a mensagem chegou no canal de Umidade, atualiza a div da umidade
+  if(topic === 'projeto_scanner_seu_nome/umidade') {
+    document.getElementById('id_da_div_umidade').innerText = valorDigitado + ' %';
+  }
+});
