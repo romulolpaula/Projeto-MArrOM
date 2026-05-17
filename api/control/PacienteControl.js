@@ -58,7 +58,10 @@ module.exports = class PacienteControl {
   show = async (request, response, next) => {
     console.log("PacienteControl.show()");
     try {
-      const pacienteId = request.params.id;
+      // 🔹 FORÇA A CONVERSÃO PARA NÚMERO INTEIRO
+      // Isso resolve o erro "ID do Paciente deve ser um nº inteiro E positivo"
+      const pacienteId = parseInt(request.params.id, 10);
+
       const paciente = await this.#pacienteService.findById(pacienteId);
 
       const objResposta = {

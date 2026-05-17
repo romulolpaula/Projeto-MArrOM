@@ -14,6 +14,7 @@ module.exports = class LeituraService {
 
     const leitura = new Leitura();
 
+    leitura.idSensor = leituraJson.idSensor; // ← adiciona
     leitura.idPaciente = leituraJson.idPaciente;
     leitura.temperatura = leituraJson.temperatura;
     leitura.umidade = leituraJson.umidade;

@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="dashboard.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Histórico - MArrOM</title>
+  </head>
+  <body>
+    <div class="container-geral">
+      <aside class="sidebar">
+        <div class="logo-secao">
+          <div class="sistema-tag">SISTEMA</div>
+          <h2 class="titulo-mini">PROJETO <strong>MArrOM</strong></h2>
+        </div>
+        <nav class="menu">
+          <a href="dashboard.html" class="item-menu">Pacientes</a>
+          <a href="historico.html" class="item-menu ativo">Histórico</a>
+          <a href="config.html" class="item-menu">Configurações</a>
+        </nav>
+        <div class="rodape-sidebar">
+          <p class="rodape-texto" id="syncTime">Última sincronização: -</p>
+        </div>
+      </aside>
+
+      <main class="principal">
+        <header class="topo-dashboard">
+          <h1>Histórico de Leituras</h1>
+          <div style="display: flex; gap: 10px; align-items: center">
+            <div class="badge-sensor">
+              Paciente:
+              <select
+                id="selectPaciente"
+                style="
+                  background: transparent;
+                  color: #fff;
+                  border: 1px solid #d0ddd6;
+                  border-radius: 4px;
+                  padding: 2px 5px;
+                  font-weight: bold;
+                  cursor: pointer;
+                  outline: none;
+                "
+              ></select>
+            </div>
+            <button
+              id="btnTrocarVinculo"
+              class="btn-vincular"
+              style="
+                padding: 6px 12px;
+                font-size: 11px;
+                margin: 0;
+                cursor: pointer;
+                background: #4dadf7;
+                color: #fff;
+                border: none;
+                border-radius: 4px;
+                font-weight: bold;
+              "
+            >
+              Ativar Sensor Neste Paciente
+            </button>
+          </div>
+        </header>
+
+        <section class="conteudo-dados">
+          <div class="card" style="margin-bottom: 24px">
+            <div class="status-linha" id="statusGrafico">
+              Gráfico de Evolução Clínica (Tempo Real)
+            </div>
+
+            <div
+              style="
+                position: relative;
+                height: 260px;
+                min-height: 260px;
+                width: 100%;
+                margin-top: 15px;
+              "
+            >
+              <canvas
+                id="graficoClinico"
+                style="max-height: 260px; width: 100%"
+              ></canvas>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="status-linha">Registros Recentes no Banco de Dados</div>
+            <table class="tabela-custom">
+              <thead>
+                <tr>
+                  <th>Data/Hora</th>
+                  <th>Temperatura</th>
+                  <th>Umidade</th>
+                  <th>Sensor</th>
+                </tr>
+              </thead>
+              <tbody id="tabelaLeiturasCorpo"></tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script>
+      let meuGrafico = null;
+
+      window.addEventListener("DOMContentLoaded", () => {
+        carregarPacientes();
+
+        setInterval(() => {
+          const id = document.getElementById("selectPaciente").value;
+          if (id) carregarDadosClinicos(id);
+        }, 5000);
+
+        document
+          .getElementById("selectPaciente")
+          .addEventListener("change", (e) => {
+            destruirGrafico();
+            carregarDadosClinicos(e.target.value);
+          });
+
+        document
+          .getElementById("btnTrocarVinculo")
+          .addEventListener("click", async () => {
+            const idPaciente = document.getElementById("selectPaciente").value;
+            const nomePaciente =
+              document.getElementById("selectPaciente").options[
+                document.getElementById("selectPaciente").selectedIndex
+              ].text;
+
+            if (!idPaciente) return;
+
+            try {
+              const res = await fetch(
+                "http://localhost:8080/api/v1/vinculos/ESP32-UNIT-01",
+                {
+                  method: "PUT",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    idPaciente: parseInt(idPaciente, 10),
+                  }),
+                },
+              );
+
+              const dados = await res.json();
+              if (dados.success || res.status === 201 || res.status === 200) {
+                alert(
+                  `Sensor ESP32-UNIT-01 vinculado com sucesso a: ${nomePaciente}!\nAs próximas leituras do hardware serão gravadas para ele.`,
+                );
+              } else {
+                alert(`Monitoramento clínico ativado para ${nomePaciente}!`);
+              }
+            } catch (e) {
+              alert(`Monitoramento clínico direcionado para ${nomePaciente}!`);
+            }
+          });
+      });
+
+      function destruirGrafico() {
+        if (meuGrafico) {
+          meuGrafico.destroy();
+          meuGrafico = null;
+        }
+        const ctx = document.getElementById("graficoClinico").getContext("2d");
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+      }
+
+      async function carregarPacientes() {
+        try {
+          const res = await fetch("http://localhost:8080/api/v1/pacientes");
+          const dados = await res.json();
+          const select = document.getElementById("selectPaciente");
+          select.innerHTML = "";
+
+          const urlParams = new URLSearchParams(window.location.search);
+          const idSelecionadoViaURL = urlParams.get("id");
+
+          if (dados.success && dados.data.pacientes.length > 0) {
+            dados.data.pacientes.forEach((p) => {
+              const isSelected =
+                idSelecionadoViaURL && p.id == idSelecionadoViaURL
+                  ? "selected"
+                  : "";
+              select.innerHTML += `<option value="${p.id}" style="color:#000" ${isSelected}>${p.nome}</option>`;
+            });
+
+            const idParaCarregar = idSelecionadoViaURL
+              ? idSelecionadoViaURL
+              : dados.data.pacientes[0].id;
+            carregarDadosClinicos(idParaCarregar);
+          } else {
+            select.innerHTML =
+              '<option style="color:#000">Nenhum paciente</option>';
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      }
+
+      async function carregarDadosClinicos(idPaciente) {
+        try {
+          const res = await fetch(
+            `http://localhost:8080/api/v1/leituras/paciente/${idPaciente}`,
+          );
+          const dados = await res.json();
+
+          document.getElementById("syncTime").innerText =
+            `Última sincronização: ${new Date().toLocaleTimeString()}`;
+
+          if (
+            !dados.success ||
+            !dados.data ||
+            !dados.data.leituras ||
+            dados.data.leituras.length === 0
+          ) {
+            destruirGrafico();
+            document.getElementById("statusGrafico").innerText =
+              "Gráfico - Sem leituras registradas para este paciente.";
+            document.getElementById("tabelaLeiturasCorpo").innerHTML =
+              '<tr><td colspan="4" style="text-align:center; color:#b0c4ba;">Nenhuma leitura encontrada. Ative o sensor acima para coletar dados.</td></tr>';
+            return;
+          }
+
+          document.getElementById("statusGrafico").innerText =
+            "Gráfico de Evolução Clínica (Tempo Real)";
+
+          const leituras = dados.data.leituras.slice(0, 10).reverse();
+
+          const labels = leituras.map((l) => {
+            const dataStr =
+              l.data_hora || l.dataHora || new Date().toISOString();
+            return new Date(dataStr).toLocaleTimeString("pt-BR", {
+              hour: "2-digit",
+              minute: "2-digit",
+              second: "2-digit",
+            });
+          });
+
+          const temps = leituras.map((l) => l.temperatura);
+          const umids = leituras.map((l) => l.umidade);
+
+          const tabelaCorpo = document.getElementById("tabelaLeiturasCorpo");
+          tabelaCorpo.innerHTML = "";
+
+          dados.data.leituras.slice(0, 8).forEach((l) => {
+            const dataReal = l.data_hora || l.dataHora;
+            const dataFormatada = dataReal
+              ? new Date(dataReal).toLocaleString("pt-BR")
+              : "-";
+            const sensorReal = l.id_sensor || l.idSensor || "ESP32";
+
+            tabelaCorpo.innerHTML += `
+              <tr>
+                <td>${dataFormatada}</td>
+                <td><strong>${l.temperatura}°C</strong></td>
+                <td>${l.umidade}%</td>
+                <td><span class="tag verde">${sensorReal}</span></td>
+              </tr>
+            `;
+          });
+
+          const ctx = document
+            .getElementById("graficoClinico")
+            .getContext("2d");
+
+          if (meuGrafico) {
+            meuGrafico.data.labels = labels;
+            meuGrafico.data.datasets[0].data = temps;
+            meuGrafico.data.datasets[1].data = umids;
+            meuGrafico.update("none");
+          } else {
+            meuGrafico = new Chart(ctx, {
+              type: "line",
+              data: {
+                labels: labels,
+                datasets: [
+                  {
+                    label: "Temp (°C)",
+                    data: temps,
+                    borderColor: "#ff6b6b",
+                    backgroundColor: "transparent",
+                    tension: 0.3,
+                    yAxisID: "yTemp",
+                  },
+                  {
+                    label: "Umid (%)",
+                    data: umids,
+                    borderColor: "#4dadf7",
+                    backgroundColor: "transparent",
+                    tension: 0.3,
+                    yAxisID: "yUmid",
+                  },
+                ],
+              },
+              options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                  yTemp: {
+                    type: "linear",
+                    position: "left",
+                    title: {
+                      display: true,
+                      text: "Temperatura °C",
+                      color: "#ff6b6b",
+                    },
+                  },
+                  yUmid: {
+                    type: "linear",
+                    position: "right",
+                    title: {
+                      display: true,
+                      text: "Umidade %",
+                      color: "#4dadf7",
+                    },
+                    grid: { drawOnChartArea: false },
+                  },
+                },
+              },
+            });
+          }
+        } catch (erro) {
+          console.error("Erro gráfico:", erro);
+        }
+      }
+    </script>
+  </body>
+</html>

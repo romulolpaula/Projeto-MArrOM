@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="dashboard.css" />
+    <title>Painel de Acompanhamento - Projeto MArrOM</title>
+  </head>
+  <body>
+    <div class="container-geral">
+      <aside class="sidebar">
+        <div class="logo-secao">
+          <div class="sistema-tag">SISTEMA</div>
+          <h2 class="titulo-mini">PROJETO <strong>MArrOM</strong></h2>
+        </div>
+
+        <nav class="menu">
+          <a href="dashboard.html" class="item-menu ativo">Pacientes</a>
+          <a href="historico.html" class="item-menu">Histórico</a>
+          <a href="config.html" class="item-menu">Configurações</a>
+        </nav>
+
+        <div class="rodape-sidebar">
+          <p class="autores" id="syncDashboard">Última sincronização: -</p>
+        </div>
+      </aside>
+
+      <main class="principal">
+        <header class="topo-dashboard">
+          <h1>Monitoramento em Tempo Real</h1>
+          <div class="badge-sensor">
+            Sensor Físico: <strong>ESP32-UNIT-01</strong>
+          </div>
+        </header>
+
+        <section class="grid-pacientes" id="gridPacientes"></section>
+      </main>
+    </div>
+
+    <script>
+      window.addEventListener("DOMContentLoaded", () => {
+        carregarDashboard();
+        setInterval(carregarDashboard, 5000);
+      });
+
+      async function carregarDashboard() {
+        try {
+          const [respostaPacientes, resVinculo] = await Promise.all([
+            fetch("http://localhost:8080/api/v1/pacientes"),
+            fetch("http://localhost:8080/api/v1/vinculos/ESP32-UNIT-01"),
+          ]);
+
+          const resultadoPacientes = await respostaPacientes.json();
+          const dadosVinculo = await resVinculo.json();
+
+          const idPacienteAtivo = dadosVinculo.success
+            ? dadosVinculo.data.idPacienteAtual
+            : null;
+
+          document.getElementById("syncDashboard").innerText =
+            `Última sincronização: ${new Date().toLocaleTimeString()}`;
+
+          if (!resultadoPacientes.success) return;
+
+          const grid = document.getElementById("gridPacientes");
+          grid.innerHTML = "";
+
+          const listaPacientes = resultadoPacientes.data.pacientes;
+
+          for (let p of listaPacientes) {
+            let temp = "--";
+            let umid = "--";
+            let monitorandoStatus = "○ Inativo";
+            let classeInativo = "inativo";
+
+            if (p.id === idPacienteAtivo) {
+              try {
+                const respostaLeituras = await fetch(
+                  `http://localhost:8080/api/v1/leituras/paciente/${p.id}`,
+                );
+                const resultadoLeituras = await respostaLeituras.json();
+
+                if (
+                  resultadoLeituras.success &&
+                  resultadoLeituras.data.leituras.length > 0
+                ) {
+                  const ultimaLeitura = resultadoLeituras.data.leituras[0];
+                  temp = `${ultimaLeitura.temperatura}°C`;
+                  umid = `${ultimaLeitura.umidade}%`;
+                  monitorandoStatus = "● Monitorando agora";
+                  classeInativo = "";
+                }
+              } catch (err) {
+                console.error(err);
+              }
+            }
+
+            grid.innerHTML += `
+              <div class="card ${classeInativo ? "" : "paciente-ativo"}">
+                <div class="status-linha ${classeInativo}">${monitorandoStatus}</div>
+                <h3>${p.nome}</h3>
+                <div class="indicadores">
+                  <div class="bloco-dado">
+                    <span>Temp.</span>
+                    <strong>${temp}</strong>
+                  </div>
+                  <div class="bloco-dado">
+                    <span>Umidade</span>
+                    <strong>${umid}</strong>
+                  </div>
+                </div>
+                <button class="btn-vincular ${classeInativo ? "principal" : ""}" onclick="location.href='historico.html?id=${p.id}'">
+                  Ver Gráfico
+                </button>
+              </div>
+            `;
+          }
+        } catch (erro) {
+          console.error("Erro ao carregar painel principal: ", erro);
+        }
+      }
+    </script>
+  </body>
+</html>

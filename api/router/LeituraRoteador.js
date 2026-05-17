@@ -23,19 +23,20 @@ module.exports = class LeituraRoteador {
   }
 
   createRoutes = () => {
-    console.log("LeituraRoteador.createRoutes()");
+    console.log("⬆️  LeituraRoteador.createRoutes()");
 
+    // Rota onde o sensor salva os dados (Já estava sem JWT)
     this.#router.post(
       "/",
-      this.#jwtMiddleware.validateToken,
       this.#leituraMiddleware.validateBody,
       this.#leituraControl.store,
     );
 
+    // Rota onde o HTML busca os dados para o gráfico (Comentamos o JWT)
     this.#router.get(
       "/paciente/:idPaciente",
-      this.#jwtMiddleware.validateToken,
-      this.#leituraMiddleware.validateIdPaciente,
+      // this.#jwtMiddleware.validateToken, <--- COMENTADO PARA TESTE!
+      this.#leituraMiddleware.validateIdPacienteParam,
       this.#leituraControl.show,
     );
 

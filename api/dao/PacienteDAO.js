@@ -1,11 +1,11 @@
-const Paciente = require(".../model/Paciente");
+const Paciente = require("../model/Paciente");
 
 module.exports = class PacienteDAO {
   #database;
 
   constructor(databaseInstance) {
     console.log("PacienteDAO.constructor()");
-    this.#datasbase = databaseInstance;
+    this.#database = databaseInstance;
   }
 
   create = async (objPacienteModel) => {

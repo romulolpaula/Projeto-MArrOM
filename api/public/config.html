@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="dashboard.css" />
+    <title>Configurações - Projeto MArrOM</title>
+  </head>
+  <body>
+    <div class="container-geral">
+      <aside class="sidebar">
+        <div class="logo-secao">
+          <div class="sistema-tag">SISTEMA</div>
+          <h2 class="titulo-mini">PROJETO <strong>MArrOM</strong></h2>
+        </div>
+        <nav class="menu">
+          <a href="dashboard.html" class="item-menu">Pacientes</a>
+          <a href="historico.html" class="item-menu">Histórico</a>
+          <a href="config.html" class="item-menu ativo">Configurações</a>
+        </nav>
+        <div class="rodape-sidebar">
+          <p class="rodape-texto" id="syncConfig">Última sincronização: -</p>
+        </div>
+      </aside>
+
+      <main class="principal">
+        <header class="topo-dashboard">
+          <h1>Configurações do Sistema</h1>
+        </header>
+
+        <section class="grid-pacientes">
+          <div class="card">
+            <div class="status-linha">Parâmetros do Hardware</div>
+            <h3 style="margin-bottom: 20px">Conexão ESP32</h3>
+
+            <div style="margin-bottom: 15px">
+              <label class="status-linha" style="font-size: 9px"
+                >ID do Dispositivo</label
+              >
+              <input
+                type="text"
+                value="ESP32-UNIT-01"
+                class="resposta"
+                readonly
+              />
+            </div>
+
+            <div style="margin-bottom: 15px">
+              <label class="status-linha" style="font-size: 9px"
+                >Status da Conexão</label
+              >
+              <input
+                type="text"
+                id="statusSensor"
+                class="resposta"
+                value="Verificando..."
+                readonly
+              />
+            </div>
+
+            <div style="margin-bottom: 15px">
+              <label class="status-linha" style="font-size: 9px"
+                >Paciente Vinculado Agora</label
+              >
+              <input
+                type="text"
+                id="pacienteVinculado"
+                class="resposta"
+                value="Buscando..."
+                readonly
+              />
+            </div>
+
+            <button class="btn-vincular principal" onclick="verificarSensor()">
+              Atualizar Status
+            </button>
+          </div>
+
+          <div class="card">
+            <div class="status-linha">Admissão Hospitalar</div>
+            <h3 style="margin-bottom: 20px">Cadastrar Novo Paciente</h3>
+
+            <div style="margin-bottom: 15px">
+              <label class="status-linha" style="font-size: 9px"
+                >Nome Completo</label
+              >
+              <input
+                type="text"
+                id="nomePaciente"
+                class="resposta"
+                placeholder="Ex: Patrícia"
+                required
+              />
+            </div>
+
+            <div style="margin-bottom: 15px">
+              <label class="status-linha" style="font-size: 9px"
+                >Status de Monitoramento</label
+              >
+              <input
+                type="text"
+                id="statusPaciente"
+                class="resposta"
+                placeholder="Ex: Estável, Crítico, Observação"
+                required
+              />
+            </div>
+
+            <button
+              class="btn-vincular principal"
+              style="width: 100%; cursor: pointer"
+              onclick="cadastrarPaciente()"
+            >
+              Salvar Paciente
+            </button>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script>
+      // verificacao p carregar de 10 seg
+      window.addEventListener("DOMContentLoaded", () => {
+        verificarSensor();
+        setInterval(verificarSensor, 10000);
+      });
+
+      async function verificarSensor() {
+        const campoStatus = document.getElementById("statusSensor");
+        const campoVinculo = document.getElementById("pacienteVinculado");
+
+        try {
+          // busca do vinculo ativo
+          const resVinculo = await fetch(
+            "http://localhost:8080/api/v1/vinculos/ESP32-UNIT-01",
+          );
+          const dadosVinculo = await resVinculo.json();
+
+          const idPacienteAtual = dadosVinculo.success
+            ? dadosVinculo.data.idPacienteAtual
+            : null;
+
+          if (!idPacienteAtual) {
+            campoVinculo.value = "Nenhum paciente vinculado";
+            campoStatus.value = "Sem vínculo ativo";
+            return;
+          }
+
+          const resPaciente = await fetch(
+            `http://localhost:8080/api/v1/pacientes/${idPacienteAtual}`,
+          );
+          const dadosPaciente = await resPaciente.json();
+
+          if (dadosPaciente.success && dadosPaciente.data.pacientes) {
+            const paciente = Array.isArray(dadosPaciente.data.pacientes)
+              ? dadosPaciente.data.pacientes[0]
+              : dadosPaciente.data.pacientes;
+            campoVinculo.value = `${paciente.nome} (ID: ${idPacienteAtual})`;
+          } else {
+            campoVinculo.value = `Paciente ID: ${idPacienteAtual}`;
+          }
+
+          const resLeitura = await fetch(
+            `http://localhost:8080/api/v1/leituras/paciente/${idPacienteAtual}`,
+          );
+          const dadosLeitura = await resLeitura.json();
+
+          if (
+            !dadosLeitura.success ||
+            dadosLeitura.data.leituras.length === 0
+          ) {
+            campoStatus.value = "Offline: nenhuma leitura encontrada";
+            return;
+          }
+
+          const ultimaLeitura = dadosLeitura.data.leituras[0];
+          const dataHora = new Date(ultimaLeitura.data_hora);
+          const agora = new Date();
+          const diffSegundos = Math.floor((agora - dataHora) / 1000);
+
+          if (diffSegundos <= 15) {
+            campoStatus.value = `Online: última leitura há ${diffSegundos}s`;
+          } else if (diffSegundos <= 60) {
+            campoStatus.value = `Instável: última leitura há ${diffSegundos}s`;
+          } else {
+            campoStatus.value = `Offline: última leitura há ${Math.floor(diffSegundos / 60)} min`;
+          }
+
+          document.getElementById("syncConfig").innerText =
+            `Última sincronização: ${new Date().toLocaleTimeString()}`;
+        } catch (e) {
+          document.getElementById("statusSensor").value =
+            "Erro ao conectar com a API";
+          document.getElementById("pacienteVinculado").value = "-";
+          console.error(e);
+        }
+      }
+
+      async function cadastrarPaciente() {
+        const nome = document.getElementById("nomePaciente").value;
+        const status = document.getElementById("statusPaciente").value;
+
+        if (!nome || !status) {
+          alert("Preencha todos os campos!");
+          return;
+        }
+
+        try {
+          const resposta = await fetch(
+            "http://localhost:8080/api/v1/pacientes",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                paciente: {
+                  nome: nome,
+                  status_monitoramento: status,
+                },
+              }),
+            },
+          );
+
+          const resultado = await resposta.json();
+
+          if (resultado.success) {
+            alert("✅ Paciente cadastrado com sucesso!");
+            document.getElementById("nomePaciente").value = "";
+            document.getElementById("statusPaciente").value = "";
+          } else {
+            alert("Erro ao cadastrar: " + resultado.message);
+          }
+        } catch (erro) {
+          console.error(erro);
+          alert("Erro de comunicação com o servidor.");
+        }
+      }
+    </script>
+  </body>
+</html>
