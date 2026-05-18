@@ -1,19 +1,11 @@
 const MeuTokenJWT = require("../http/MeuTokenJWT");
 
-/**
- * Middleware para validação de tokens JWT em requisições.
- */
 module.exports = class JwtMiddleware {
   validateToken = (request, response, next) => {
     console.log(
-      "🔷 JwtMiddleware.validateToken() -> [Ignorado temporariamente para testes]",
+      "JwtMiddleware.validateToken() -> [Ignorado temporariamente para testes]",
     );
 
-    // 🚨 GAMBIARRA TEMPORÁRIA DE ENGENHARIA:
-    // Deixa passar direto sem olhar o token para você conseguir testar o HTML e o ESP32.
-    return next();
-
-    // O código original do professor continua aqui embaixo protegido:
     const authorization = request.headers.authorization;
     const jwt = new MeuTokenJWT();
     const autorizado = jwt.validarToken(authorization);

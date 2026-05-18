@@ -3,9 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
     <link rel="stylesheet" href="login.css" />
-    <title>Login</title>
+    <title>Login - Projeto MArrOM</title>
   </head>
   <body>
     <div class="tela">
@@ -13,31 +12,37 @@
         <div class="sistema">SISTEMA</div>
 
         <h1 class="titulo">PROJETO <strong>MArrOM</strong></h1>
-        <p class="subtitulo"></p>
+        <p
+          class="subtitulo"
+          id="divResposta"
+          style="color: #ff6b6b; font-size: 12px; margin-bottom: 10px"
+        ></p>
 
         <div class="login">
-          <label for="input-login" class="input">
-            Registro Profissional ou E-mail</label
+          <label for="txtUsuario" class="input"
+            >Registro Profissional ou E-mail</label
           >
-
           <input
             type="text"
-            id="input-login"
+            id="txtUsuario"
             class="resposta"
             placeholder="CRM / CRN ou e-mail"
           />
         </div>
 
         <div class="login">
-          <label for="input-senha" class="input">Senha</label>
+          <label for="txtSenha" class="input">Senha</label>
           <input
             type="password"
-            id="input-senha"
+            id="txtSenha"
             class="resposta"
             placeholder="••••••••"
           />
         </div>
-        <button class="btn-entrar">Entrar</button>
+
+        <button class="btn-entrar" id="btnLogin" style="cursor: pointer">
+          Entrar
+        </button>
       </div>
 
       <div class="lado-direito">
@@ -47,9 +52,53 @@
             não-invasivo.
           </div>
         </div>
-
         <div class="textinho">Trabalho por: Mariah Cesar e Rômulo Lopes.</div>
       </div>
     </div>
+
+    <script type="module">
+      import ApiService from "./ApiService.js";
+
+      const api = new ApiService("o token ainda será gerado");
+
+      const txtUsuario = document.getElementById("txtUsuario");
+      const txtSenha = document.getElementById("txtSenha");
+      const divResposta = document.getElementById("divResposta");
+      const btnLogin = document.getElementById("btnLogin");
+
+      btnLogin.onclick = async function btnListar_click() {
+        if (txtUsuario.value.trim() == "") {
+          divResposta.textContent = "Usuário Inválido";
+          return;
+        } else if (txtSenha.value.trim() == "") {
+          divResposta.textContent = "Senha Inválida";
+          return;
+        }
+
+        const dadosLogin = {
+          funcionario: {
+            email: txtUsuario.value.trim(),
+            senha: txtSenha.value.trim(),
+          },
+        };
+
+        try {
+          const respostaAPI = await api.post(
+            "http://localhost:8080/api/v1/funcionarios/login",
+            dadosLogin,
+          );
+          console.log(respostaAPI);
+
+          if (respostaAPI.success == true) {
+            localStorage.setItem("userData", JSON.stringify(respostaAPI));
+            window.location.href = "dashboard.html";
+          } else {
+            divResposta.textContent = "Credenciais incorretas!";
+          }
+        } catch (erro) {
+          divResposta.textContent = "Erro de conexão com o servidor.";
+        }
+      };
+    </script>
   </body>
 </html>

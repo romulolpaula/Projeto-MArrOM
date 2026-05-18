@@ -4,28 +4,28 @@ module.exports = class PacienteRoteador {
   #router;
   #pacienteControl;
   #jwtMiddleware;
-  #pacienteMiddleware; // ← adiciona a dependência
+  #pacienteMiddleware;
 
   constructor(
     routerDependency,
     jwtMiddlewareDependency,
-    pacienteMiddlewareDependency, // ← recebe o middleware
+    pacienteMiddlewareDependency,
     pacienteControlDependency,
   ) {
-    console.log("⬆️  PacienteRoteador.constructor()");
+    console.log("PacienteRoteador.constructor()");
     this.#router = routerDependency;
     this.#jwtMiddleware = jwtMiddlewareDependency;
-    this.#pacienteMiddleware = pacienteMiddlewareDependency; // ← salva
+    this.#pacienteMiddleware = pacienteMiddlewareDependency;
     this.#pacienteControl = pacienteControlDependency;
   }
 
   createRoutes = () => {
-    console.log("⬆️  PacienteRoteador.createRoutes()");
+    console.log("PacienteRoteador.createRoutes()");
 
     this.#router.post(
       "/",
       // this.#jwtMiddleware.validateToken,
-      this.#pacienteMiddleware.validateBody, // ← valida o body antes
+      this.#pacienteMiddleware.validateBody,
       this.#pacienteControl.store,
     );
 
@@ -38,7 +38,7 @@ module.exports = class PacienteRoteador {
     this.#router.get(
       "/:id",
       // this.#jwtMiddleware.validateToken,
-      this.#pacienteMiddleware.validateIdParam, // ← valida o id
+      this.#pacienteMiddleware.validateIdParam,
       this.#pacienteControl.show,
     );
 

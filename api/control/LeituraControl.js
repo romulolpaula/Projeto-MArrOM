@@ -9,7 +9,7 @@ module.exports = class LeituraControl {
   }
 
   store = async (request, response, next) => {
-    console.log("🔵 LeituraControl.store()");
+    console.log("LeituraControl.store()");
     try {
       const leituraBodyRequest = request.body.leitura;
 
@@ -42,7 +42,7 @@ module.exports = class LeituraControl {
   };
 
   show = async (request, response, next) => {
-    console.log("🔵 LeituraControl.show()");
+    console.log("LeituraControl.show()");
     try {
       const pacienteId = request.params.idPaciente;
 

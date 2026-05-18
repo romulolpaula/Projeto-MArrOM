@@ -14,7 +14,7 @@ module.exports = class LeituraDAO {
     const SQL =
       "INSERT INTO leituras (id_sensor, id_paciente, temperatura, umidade) VALUES (?, ?, ?, ?);";
     const params = [
-      objLeituraModel.idSensor, // ← adiciona
+      objLeituraModel.idSensor,
       objLeituraModel.idPaciente,
       objLeituraModel.temperatura,
       objLeituraModel.umidade,

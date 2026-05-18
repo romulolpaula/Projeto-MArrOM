@@ -22,17 +22,14 @@
           <p class="rodape-texto" id="syncConfig">Última sincronização: -</p>
         </div>
       </aside>
-
       <main class="principal">
         <header class="topo-dashboard">
           <h1>Configurações do Sistema</h1>
         </header>
-
         <section class="grid-pacientes">
           <div class="card">
             <div class="status-linha">Parâmetros do Hardware</div>
             <h3 style="margin-bottom: 20px">Conexão ESP32</h3>
-
             <div style="margin-bottom: 15px">
               <label class="status-linha" style="font-size: 9px"
                 >ID do Dispositivo</label
@@ -44,7 +41,6 @@
                 readonly
               />
             </div>
-
             <div style="margin-bottom: 15px">
               <label class="status-linha" style="font-size: 9px"
                 >Status da Conexão</label
@@ -57,7 +53,6 @@
                 readonly
               />
             </div>
-
             <div style="margin-bottom: 15px">
               <label class="status-linha" style="font-size: 9px"
                 >Paciente Vinculado Agora</label
@@ -70,7 +65,6 @@
                 readonly
               />
             </div>
-
             <button class="btn-vincular principal" onclick="verificarSensor()">
               Atualizar Status
             </button>
@@ -79,7 +73,6 @@
           <div class="card">
             <div class="status-linha">Admissão Hospitalar</div>
             <h3 style="margin-bottom: 20px">Cadastrar Novo Paciente</h3>
-
             <div style="margin-bottom: 15px">
               <label class="status-linha" style="font-size: 9px"
                 >Nome Completo</label
@@ -92,7 +85,6 @@
                 required
               />
             </div>
-
             <div style="margin-bottom: 15px">
               <label class="status-linha" style="font-size: 9px"
                 >Status de Monitoramento</label
@@ -105,7 +97,6 @@
                 required
               />
             </div>
-
             <button
               class="btn-vincular principal"
               style="width: 100%; cursor: pointer"
@@ -119,7 +110,17 @@
     </div>
 
     <script>
-      // verificacao p carregar de 10 seg
+      const userDataRaw = localStorage.getItem("userData");
+      if (!userDataRaw) window.location.href = "login.html";
+      const userData = JSON.parse(userDataRaw);
+      const tokenMarrom = userData.token;
+      if (!tokenMarrom) window.location.href = "login.html";
+
+      const authHeaders = {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${tokenMarrom}`,
+      };
+
       window.addEventListener("DOMContentLoaded", () => {
         verificarSensor();
         setInterval(verificarSensor, 10000);
@@ -130,12 +131,11 @@
         const campoVinculo = document.getElementById("pacienteVinculado");
 
         try {
-          // busca do vinculo ativo
           const resVinculo = await fetch(
             "http://localhost:8080/api/v1/vinculos/ESP32-UNIT-01",
+            { headers: authHeaders },
           );
           const dadosVinculo = await resVinculo.json();
-
           const idPacienteAtual = dadosVinculo.success
             ? dadosVinculo.data.idPacienteAtual
             : null;
@@ -148,6 +148,7 @@
 
           const resPaciente = await fetch(
             `http://localhost:8080/api/v1/pacientes/${idPacienteAtual}`,
+            { headers: authHeaders },
           );
           const dadosPaciente = await resPaciente.json();
 
@@ -162,6 +163,7 @@
 
           const resLeitura = await fetch(
             `http://localhost:8080/api/v1/leituras/paciente/${idPacienteAtual}`,
+            { headers: authHeaders },
           );
           const dadosLeitura = await resLeitura.json();
 
@@ -210,20 +212,16 @@
             "http://localhost:8080/api/v1/pacientes",
             {
               method: "POST",
-              headers: { "Content-Type": "application/json" },
+              headers: authHeaders,
               body: JSON.stringify({
-                paciente: {
-                  nome: nome,
-                  status_monitoramento: status,
-                },
+                paciente: { nome: nome, status_monitoramento: status },
               }),
             },
           );
 
           const resultado = await resposta.json();
-
           if (resultado.success) {
-            alert("✅ Paciente cadastrado com sucesso!");
+            alert("Paciente cadastrado com sucesso!");
             document.getElementById("nomePaciente").value = "";
             document.getElementById("statusPaciente").value = "";
           } else {

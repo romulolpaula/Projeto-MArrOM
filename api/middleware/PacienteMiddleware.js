@@ -2,7 +2,7 @@ const ErrorResponse = require("../utils/ErrorResponse");
 
 module.exports = class PacienteMiddleware {
   validateBody = (request, response, next) => {
-    console.log("🔷 PacienteMiddleware.validateBody()");
+    console.log("PacienteMiddleware.validateBody()");
     const body = request.body;
 
     if (!body.paciente) {
@@ -21,7 +21,7 @@ module.exports = class PacienteMiddleware {
   };
 
   validateIdParam = (request, response, next) => {
-    console.log("🔷 PacienteMiddleware.validateIdParam()");
+    console.log("PacienteMiddleware.validateIdParam()");
     const { id } = request.params;
 
     if (!id) {

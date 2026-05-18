@@ -1,35 +1,34 @@
 const express = require("express");
 const cors = require("cors");
-const ErrorResponse = require("./utils/ErrorResponse"); // Ajuste a pasta se necessário
+const ErrorResponse = require("./utils/ErrorResponse");
 
-// Middlewares Globais/Específicos
 const JwtMiddleware = require("./middleware/JwtMiddleware");
 const PacienteMiddleware = require("./middleware/PacienteMiddleware");
 const LeituraMiddleware = require("./middleware/LeituraMiddleware");
 const SensorVinculoMiddleware = require("./middleware/SensorVinculoMiddleware");
+const AutenticacaoMiddleware = require("./middleware/AutenticacaoMiddleware");
 
-// Controllers
 const PacienteControl = require("./control/PacienteControl");
 const LeituraControl = require("./control/LeituraControl");
 const SensorVinculoControl = require("./control/SensorVinculoControl");
+const AutenticacaoControl = require("./control/AutenticacaoControl");
 
-// Services
 const PacienteService = require("./service/PacienteService");
 const LeituraService = require("./service/LeituraService");
 const SensorVinculoService = require("./service/SensorVinculoService");
+const UsuarioService = require("./service/UsuarioService");
 
-// DAOs
 const PacienteDAO = require("./dao/PacienteDAO");
 const LeituraDAO = require("./dao/LeituraDAO");
 const SensorVinculoDAO = require("./dao/SensorVinculoDAO");
+const UsuarioDAO = require("./dao/UsuarioDAO");
 
-// Banco de dados
 const MysqlDatabase = require("./database/MysqlDatabase");
 
-// Roteadores
 const PacienteRoteador = require("./router/PacienteRoteador");
 const LeituraRoteador = require("./router/LeituraRoteador");
 const SensorVinculoRoteador = require("./router/SensorVinculoRoteador");
+const AutenticacaoRoteador = require("./router/AutenticacaoRoteador");
 
 module.exports = class Server {
   #porta;
@@ -40,18 +39,22 @@ module.exports = class Server {
   #pacienteMiddleware;
   #leituraMiddleware;
   #sensorVinculoMiddleware;
+  #authMiddleware;
 
   #pacienteDAO;
   #leituraDAO;
   #sensorVinculoDAO;
+  #usuarioDAO;
 
   #pacienteService;
   #leituraService;
   #sensorVinculoService;
+  #usuarioService;
 
   #pacienteControl;
   #leituraControl;
   #sensorVinculoControl;
+  #autenticacaoControl;
 
   constructor(porta) {
     console.log("Server.constructor()");
@@ -83,6 +86,7 @@ module.exports = class Server {
 
     this.beforeRouting();
 
+    this.setupAuth();
     this.setupPaciente();
     this.setupLeitura();
     this.setupSensorVinculo();
@@ -90,7 +94,26 @@ module.exports = class Server {
     this.setupErrorHandler();
   };
 
+  setupAuth = () => {
+    console.log("Server.setupAuth()");
+    this.#authMiddleware = new AutenticacaoMiddleware();
+    this.#usuarioDAO = new UsuarioDAO(this.#database);
+    this.#usuarioService = new UsuarioService(this.#usuarioDAO);
+    this.#autenticacaoControl = new AutenticacaoControl(this.#usuarioService);
+
+    const roteadorAuth = express.Router();
+
+    const autenticacaoRoteador = new AutenticacaoRoteador(
+      roteadorAuth,
+      this.#authMiddleware,
+      this.#autenticacaoControl,
+    );
+
+    this.#app.use("/api/v1/funcionarios", autenticacaoRoteador.createRoutes());
+  };
+
   setupPaciente = () => {
+    console.log("Server.setupPaciente()");
     this.#pacienteMiddleware = new PacienteMiddleware();
     this.#pacienteDAO = new PacienteDAO(this.#database);
     this.#pacienteService = new PacienteService(this.#pacienteDAO);
@@ -101,7 +124,7 @@ module.exports = class Server {
     const pacienteRoteador = new PacienteRoteador(
       roteadorPaciente,
       this.#jwtMiddleware,
-      this.#pacienteMiddleware, // ← passa o middleware aqui
+      this.#pacienteMiddleware,
       this.#pacienteControl,
     );
     this.#app.use("/api/v1/pacientes", pacienteRoteador.createRoutes());

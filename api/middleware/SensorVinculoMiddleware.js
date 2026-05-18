@@ -2,7 +2,7 @@ const ErrorResponse = require("../utils/ErrorResponse");
 
 module.exports = class SensorVinculoMiddleware {
   validateUpdate = (request, response, next) => {
-    console.log("🔷 SensorVinculoMiddleware.validateUpdate()");
+    console.log("SensorVinculoMiddleware.validateUpdate()");
 
     if (!request.params.idSensor) {
       throw new ErrorResponse(400, "Erro na validação", {

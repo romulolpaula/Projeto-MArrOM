@@ -14,14 +14,14 @@ module.exports = class LeituraService {
 
     const leitura = new Leitura();
 
-    leitura.idSensor = leituraJson.idSensor; // ← adiciona
+    leitura.idSensor = leituraJson.idSensor;
     leitura.idPaciente = leituraJson.idPaciente;
     leitura.temperatura = leituraJson.temperatura;
     leitura.umidade = leituraJson.umidade;
 
     if (leitura.temperatura < 33.0) {
       console.warn(
-        `ALERTA: Possível hipotermia no paciente ${leitura.idPaciente}! (Temp: ${leitura.temperatura}°C)`,
+        `Alerta: Possível hipotermia no paciente ${leitura.idPaciente}! (Temp: ${leitura.temperatura}°C)`,
       );
     }
 

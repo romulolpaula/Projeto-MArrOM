@@ -23,7 +23,6 @@
           <p class="rodape-texto" id="syncTime">Última sincronização: -</p>
         </div>
       </aside>
-
       <main class="principal">
         <header class="topo-dashboard">
           <h1>Histórico de Leituras</h1>
@@ -63,13 +62,11 @@
             </button>
           </div>
         </header>
-
         <section class="conteudo-dados">
           <div class="card" style="margin-bottom: 24px">
             <div class="status-linha" id="statusGrafico">
               Gráfico de Evolução Clínica (Tempo Real)
             </div>
-
             <div
               style="
                 position: relative;
@@ -85,7 +82,6 @@
               ></canvas>
             </div>
           </div>
-
           <div class="card">
             <div class="status-linha">Registros Recentes no Banco de Dados</div>
             <table class="tabela-custom">
@@ -105,6 +101,17 @@
     </div>
 
     <script>
+      const userDataRaw = localStorage.getItem("userData");
+      if (!userDataRaw) window.location.href = "login.html";
+      const userData = JSON.parse(userDataRaw);
+      const tokenMarrom = userData.token;
+      if (!tokenMarrom) window.location.href = "login.html";
+
+      const authHeaders = {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${tokenMarrom}`,
+      };
+
       let meuGrafico = null;
 
       window.addEventListener("DOMContentLoaded", () => {
@@ -138,7 +145,7 @@
                 "http://localhost:8080/api/v1/vinculos/ESP32-UNIT-01",
                 {
                   method: "PUT",
-                  headers: { "Content-Type": "application/json" },
+                  headers: authHeaders,
                   body: JSON.stringify({
                     idPaciente: parseInt(idPaciente, 10),
                   }),
@@ -146,15 +153,16 @@
               );
 
               const dados = await res.json();
-              if (dados.success || res.status === 201 || res.status === 200) {
+              if (dados.success || res.status === 200) {
                 alert(
                   `Sensor ESP32-UNIT-01 vinculado com sucesso a: ${nomePaciente}!\nAs próximas leituras do hardware serão gravadas para ele.`,
                 );
               } else {
-                alert(`Monitoramento clínico ativado para ${nomePaciente}!`);
+                alert(`Erro ao vincular: ${dados.message}`);
               }
             } catch (e) {
-              alert(`Monitoramento clínico direcionado para ${nomePaciente}!`);
+              console.error(e);
+              alert("Erro de comunicação com o servidor.");
             }
           });
       });
@@ -170,7 +178,9 @@
 
       async function carregarPacientes() {
         try {
-          const res = await fetch("http://localhost:8080/api/v1/pacientes");
+          const res = await fetch("http://localhost:8080/api/v1/pacientes", {
+            headers: authHeaders,
+          });
           const dados = await res.json();
           const select = document.getElementById("selectPaciente");
           select.innerHTML = "";
@@ -204,6 +214,7 @@
         try {
           const res = await fetch(
             `http://localhost:8080/api/v1/leituras/paciente/${idPaciente}`,
+            { headers: authHeaders },
           );
           const dados = await res.json();
 
@@ -228,7 +239,6 @@
             "Gráfico de Evolução Clínica (Tempo Real)";
 
           const leituras = dados.data.leituras.slice(0, 10).reverse();
-
           const labels = leituras.map((l) => {
             const dataStr =
               l.data_hora || l.dataHora || new Date().toISOString();
@@ -238,20 +248,17 @@
               second: "2-digit",
             });
           });
-
           const temps = leituras.map((l) => l.temperatura);
           const umids = leituras.map((l) => l.umidade);
 
           const tabelaCorpo = document.getElementById("tabelaLeiturasCorpo");
           tabelaCorpo.innerHTML = "";
-
           dados.data.leituras.slice(0, 8).forEach((l) => {
             const dataReal = l.data_hora || l.dataHora;
             const dataFormatada = dataReal
               ? new Date(dataReal).toLocaleString("pt-BR")
               : "-";
             const sensorReal = l.id_sensor || l.idSensor || "ESP32";
-
             tabelaCorpo.innerHTML += `
               <tr>
                 <td>${dataFormatada}</td>
@@ -265,7 +272,6 @@
           const ctx = document
             .getElementById("graficoClinico")
             .getContext("2d");
-
           if (meuGrafico) {
             meuGrafico.data.labels = labels;
             meuGrafico.data.datasets[0].data = temps;
@@ -275,7 +281,7 @@
             meuGrafico = new Chart(ctx, {
               type: "line",
               data: {
-                labels: labels,
+                labels,
                 datasets: [
                   {
                     label: "Temp (°C)",

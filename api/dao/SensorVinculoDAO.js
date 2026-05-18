@@ -4,7 +4,7 @@ module.exports = class SensorVinculoDAO {
   #database;
 
   constructor(databaseInstance) {
-    console.log("⬆️  SensorVinculoDAO.constructor()");
+    console.log("SensorVinculoDAO.constructor()");
     this.#database = databaseInstance;
   }
 
