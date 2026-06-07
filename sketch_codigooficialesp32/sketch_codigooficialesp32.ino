@@ -6,8 +6,8 @@
 #include <PubSubClient.h>
 
 // --- 1. CONFIGURAÇÕES DA REDE WI-FI ---
-const char* ssid = "FAMILIA_2G";      // 👈 COLOQUE O SEU WI-FI AQUI
-const char* password = "F@milialopesdepaula";    // 👈 COLOQUE A SUA SENHA AQUI
+const char* ssid = "UnivapWifi";      // 👈 COLOQUE O SEU WI-FI AQUI
+const char* password = "universidade";    // 👈 COLOQUE A SUA SENHA AQUI
 
 // --- 2. CONFIGURAÇÕES DO SERVIDOR MQTT ---
 const char* mqtt_server = "broker.hivemq.com";

@@ -6,15 +6,18 @@
 #include <PubSubClient.h>
 
 // --- 1. CONFIGURAÇÕES DA REDE WI-FI ---
-const char* ssid = "UnivapWifi";      
-const char* password = "universidade";  
+const char* ssid = "UnivapWifi";      // 👈 COLOQUE O SEU WI-FI AQUI
+const char* password = "universidade";    // 👈 COLOQUE A SUA SENHA AQUI
 
 // --- 2. CONFIGURAÇÕES DO SERVIDOR MQTT ---
 const char* mqtt_server = "broker.hivemq.com";
 const int mqtt_port = 1883;
-// Crie tópicos únicos para o seu projeto:
-const char* topic_temp = "projeto_scanner_MarRom/temperatura"; 
-const char* topic_umid = "projeto_scanner_MarRom/umidade";     
+
+// Tópico Único unificado com o seu monitor_mqtt.js
+const char* seu_topic_unificado = "romulo8una/hospital/sensor1"; 
+
+// ID do Sensor para o Banco de Dados identificar o Vínculo
+const char* ID_SENSOR = "ESP32-UNIT-01";
 
 // --- 3. OBJETOS ---
 WiFiClient espClient;
@@ -24,7 +27,6 @@ Adafruit_MLX90614 mlx = Adafruit_MLX90614();
 #define DHTTYPE DHT22
 DHT dht(DHTPIN, DHTTYPE);
 
-// Função para conectar no Wi-Fi
 void setup_wifi() {
   delay(10);
   Serial.println();
@@ -39,11 +41,9 @@ void setup_wifi() {
   Serial.println(WiFi.localIP());
 }
 
-// Função para conectar no servidor MQTT
 void reconnect() {
   while (!client.connected()) {
     Serial.print("Tentando conectar ao Broker HiveMQ...");
-    // Cria um ID aleatório para não dar conflito
     String clientId = "ScannerClient-";
     clientId += String(random(0xffff), HEX);
     if (client.connect(clientId.c_str())) {
@@ -60,7 +60,6 @@ void reconnect() {
 void setup() {
   Serial.begin(115200);
   
-  // Inicia os sensores
   dht.begin();
   Wire.begin(21, 22);
   if (!mlx.begin()) {
@@ -68,22 +67,20 @@ void setup() {
     while (1);
   }
 
-  // Conecta Wi-Fi e configura MQTT
   setup_wifi();
   client.setServer(mqtt_server, mqtt_port);
 }
 
 void loop() {
-  // Mantém a conexão MQTT viva
   if (!client.connected()) {
     reconnect();
   }
   client.loop();
 
-  // Envia os dados a cada 2 segundos
+  // Envia os dados a cada 5 segundos
   static unsigned long lastMsg = 0;
   unsigned long now = millis();
-  if (now - lastMsg > 2000) {
+  if (now - lastMsg > 5000) {
     lastMsg = now;
 
     float umidade = dht.readHumidity();
@@ -94,14 +91,18 @@ void loop() {
       return;
     }
 
-    // Publica os dados na nuvem (o servidor só aceita formato de texto, por isso o String)
-    client.publish(topic_temp, String(tempAlvo).c_str());
-    client.publish(topic_umid, String(umidade).c_str());
+    // MONTA O PACOTE JSON QUE A SUA API ESPERA
+    // Formato: {"idSensor":"ESP32-UNIT-01","temperatura":36.5,"umidade":45.2}
+    String jsonPayload = "{";
+    jsonPayload += "\"idSensor\":\"" + String(ID_SENSOR) + "\",";
+    jsonPayload += "\"temperatura\":" + String(tempAlvo, 1) + ",";
+    jsonPayload += "\"umidade\":" + String(umidade, 1);
+    jsonPayload += "}";
 
-    Serial.print("Enviado p/ Nuvem -> Temp: ");
-    Serial.print(tempAlvo);
-    Serial.print(" C  |  Umidade: ");
-    Serial.print(umidade);
-    Serial.println(" %");
+    // Publica o pacote JSON unificado
+    client.publish(seu_topic_unificado, jsonPayload.c_str());
+
+    Serial.print("Enviado p/ Nuvem -> ");
+    Serial.println(jsonPayload);
   }
 }
