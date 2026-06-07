@@ -1,12 +1,18 @@
+const IDAO = require("../interfaces/IDAO");
 const SensorVinculo = require("../model/SensorVinculo");
 
-module.exports = class SensorVinculoDAO {
+module.exports = class SensorVinculoDAO extends IDAO {
   #database;
 
   constructor(databaseInstance) {
+    super();
     console.log("SensorVinculoDAO.constructor()");
     this.#database = databaseInstance;
   }
+
+  update = async (objVinculoModel) => {
+    return await this.updateVinculo(objVinculoModel);
+  };
 
   updateVinculo = async (objVinculoModel) => {
     console.log("SensorVinculoDAO.updateVinculo()");
@@ -35,5 +41,18 @@ module.exports = class SensorVinculoDAO {
       return resultado[0].id_paciente_atual;
     }
     return null;
+  };
+
+  create = async (model) => {
+    return 1;
+  };
+  findAll = async () => {
+    return [];
+  };
+  findById = async (id) => {
+    return await this.findPacienteAtual(id);
+  };
+  delete = async (model) => {
+    return true;
   };
 };

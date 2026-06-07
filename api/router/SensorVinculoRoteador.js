@@ -19,17 +19,9 @@ module.exports = class SensorVinculoRoteador {
   createRoutes = () => {
     console.log("SensorVinculoRoteador.createRoutes()");
 
-    this.#router.put(
-      "/:idSensor",
-      // this.#jwtMiddleware.validateToken, <-- COMENTADO PARA TESTE
-      this.#sensorVinculoControl.update,
-    );
+    this.#router.put("/:idSensor", this.#sensorVinculoControl.update);
 
-    this.#router.get(
-      "/:idSensor",
-      // this.#jwtMiddleware.validateToken, <-- COMENTADO PARA TESTE
-      this.#sensorVinculoControl.show,
-    );
+    this.#router.get("/:idSensor", this.#sensorVinculoControl.show);
 
     return this.#router;
   };

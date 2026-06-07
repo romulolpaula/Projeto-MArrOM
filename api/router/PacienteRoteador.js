@@ -29,15 +29,10 @@ module.exports = class PacienteRoteador {
       this.#pacienteControl.store,
     );
 
-    this.#router.get(
-      "/",
-      // this.#jwtMiddleware.validateToken,
-      this.#pacienteControl.index,
-    );
+    this.#router.get("/", this.#pacienteControl.index);
 
     this.#router.get(
       "/:id",
-      // this.#jwtMiddleware.validateToken,
       this.#pacienteMiddleware.validateIdParam,
       this.#pacienteControl.show,
     );

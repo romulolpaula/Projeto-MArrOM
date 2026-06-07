@@ -1,6 +1,7 @@
 module.exports = class Paciente {
   #id;
   #nome;
+  #status_monitoramento;
 
   constructor() {
     console.log("Paciente.constructor()");
@@ -11,7 +12,6 @@ module.exports = class Paciente {
     if (!Number.isInteger(parsed) || parsed <= 0) {
       throw new Error("ID do Paciente deve ser um nº inteiro E positivo.");
     }
-
     this.#id = parsed;
   }
 
@@ -23,16 +23,22 @@ module.exports = class Paciente {
     if (typeof value !== "string") {
       throw new Error("O nome do paciente deve ser uma string (texto).");
     }
-
     const nomeLimpo = value.trim();
     if (nomeLimpo.length < 3) {
       throw new Error("O nome deve ter pelo menos 3 letras.");
     }
-
     this.#nome = nomeLimpo;
   }
 
   get nome() {
     return this.#nome;
+  }
+
+  set status_monitoramento(value) {
+    this.#status_monitoramento = value ?? false;
+  }
+
+  get status_monitoramento() {
+    return this.#status_monitoramento;
   }
 };

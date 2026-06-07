@@ -23,45 +23,44 @@
           <p class="rodape-texto" id="syncTime">Última sincronização: -</p>
         </div>
       </aside>
+
       <main class="principal">
         <header class="topo-dashboard">
           <h1>Histórico de Leituras</h1>
+
           <div style="display: flex; gap: 10px; align-items: center">
-            <div class="badge-sensor">
-              Paciente:
+            <div
+              class="badge-sensor"
+              style="display: flex; align-items: center; gap: 8px"
+            >
+              <span>Paciente:</span>
               <select
                 id="selectPaciente"
                 style="
                   background: transparent;
-                  color: #fff;
-                  border: 1px solid #d0ddd6;
-                  border-radius: 4px;
-                  padding: 2px 5px;
-                  font-weight: bold;
+                  color: #1d9e75;
+                  border: 1px solid #1d9e75;
+                  border-radius: 6px;
+                  padding: 2px 6px;
+                  font-weight: 600;
+                  font-family: &quot;DM Sans&quot;, sans-serif;
+                  font-size: 12px;
                   cursor: pointer;
                   outline: none;
                 "
               ></select>
             </div>
+
             <button
               id="btnTrocarVinculo"
-              class="btn-vincular"
-              style="
-                padding: 6px 12px;
-                font-size: 11px;
-                margin: 0;
-                cursor: pointer;
-                background: #4dadf7;
-                color: #fff;
-                border: none;
-                border-radius: 4px;
-                font-weight: bold;
-              "
+              class="btn-vincular principal"
+              style="width: auto; padding: 8px 16px; font-size: 12px; margin: 0"
             >
               Ativar Sensor Neste Paciente
             </button>
           </div>
         </header>
+
         <section class="conteudo-dados">
           <div class="card" style="margin-bottom: 24px">
             <div class="status-linha" id="statusGrafico">
@@ -82,6 +81,64 @@
               ></canvas>
             </div>
           </div>
+
+          <div class="card" style="margin-bottom: 24px">
+            <div class="status-linha">
+              Prontuário de Lesões (Relacionamento N:N)
+            </div>
+            <div
+              style="
+                display: flex;
+                gap: 16px;
+                margin-top: 15px;
+                align-items: flex-end;
+                flex-wrap: wrap;
+              "
+            >
+              <div style="flex: 1; min-width: 200px">
+                <label
+                  class="status-linha"
+                  style="font-size: 9px; display: block; margin-bottom: 6px"
+                >
+                  Vincular Nova Ferida a Este Paciente
+                </label>
+                <select
+                  id="selectFeridasDisponiveis"
+                  class="resposta"
+                  style="height: 38px; padding: 0 12px"
+                ></select>
+              </div>
+              <button
+                class="btn-vincular principal"
+                style="width: auto; margin: 0; height: 38px; padding: 0 20px"
+                onclick="vincularFeridaAoPacienteAtivo()"
+              >
+                Vincular Ferida
+              </button>
+            </div>
+
+            <div
+              style="
+                margin-top: 16px;
+                border-top: 1px solid #d8e8df;
+                padding-top: 16px;
+              "
+            >
+              <span class="status-linha" style="font-size: 9px">
+                Feridas Ativas Diagnosticadas Neste Paciente:
+              </span>
+              <div
+                id="listaFeridasPaciente"
+                style="
+                  margin-top: 8px;
+                  display: flex;
+                  gap: 8px;
+                  flex-wrap: wrap;
+                "
+              ></div>
+            </div>
+          </div>
+
           <div class="card">
             <div class="status-linha">Registros Recentes no Banco de Dados</div>
             <table class="tabela-custom">
@@ -99,6 +156,70 @@
         </section>
       </main>
     </div>
+
+    <style>
+      .tag-ferida {
+        background: #fdecea;
+        color: #c0392b;
+        border: 1px solid #f5c6c2;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 600;
+        font-family: "Space Mono", monospace;
+      }
+
+      .tag.verde {
+        background: #e8f5f0;
+        color: #0f6e56;
+        border: 1px solid #c2e0d4;
+        padding: 3px 10px;
+        border-radius: 10px;
+        font-size: 10px;
+        font-weight: 600;
+        font-family: "Space Mono", monospace;
+      }
+
+      .tabela-custom {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 16px;
+        font-size: 13px;
+      }
+      .tabela-custom th {
+        text-align: left;
+        padding: 10px 14px;
+        background: #f4f7f5;
+        color: #7a9186;
+        font-family: "Space Mono", monospace;
+        font-size: 9px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        border-bottom: 1px solid #d8e8df;
+      }
+      .tabela-custom td {
+        padding: 10px 14px;
+        border-bottom: 1px solid #f0f4f2;
+        color: #0f1f14;
+      }
+      .tabela-custom tr:last-child td {
+        border-bottom: none;
+      }
+      .tabela-custom tr:hover td {
+        background: #f9fbfa;
+      }
+
+      /* Rodapé sidebar */
+      .rodape-sidebar {
+        border-top: 1px solid #d0ddd6;
+        padding-top: 16px;
+      }
+      .rodape-texto {
+        font-size: 10px;
+        color: #b0c4ba;
+        font-family: "Space Mono", monospace;
+      }
+    </style>
 
     <script>
       const userDataRaw = localStorage.getItem("userData");
@@ -126,18 +247,15 @@
           .getElementById("selectPaciente")
           .addEventListener("change", (e) => {
             destruirGrafico();
-            carregarDadosClinicos(e.target.value);
+            carregarDadosDoPacienteUnificado(e.target.value);
           });
 
         document
           .getElementById("btnTrocarVinculo")
           .addEventListener("click", async () => {
-            const idPaciente = document.getElementById("selectPaciente").value;
-            const nomePaciente =
-              document.getElementById("selectPaciente").options[
-                document.getElementById("selectPaciente").selectedIndex
-              ].text;
-
+            const sel = document.getElementById("selectPaciente");
+            const idPaciente = sel.value;
+            const nomePaciente = sel.options[sel.selectedIndex].text;
             if (!idPaciente) return;
 
             try {
@@ -151,7 +269,6 @@
                   }),
                 },
               );
-
               const dados = await res.json();
               if (dados.success || res.status === 200) {
                 alert(
@@ -194,20 +311,25 @@
                 idSelecionadoViaURL && p.id == idSelecionadoViaURL
                   ? "selected"
                   : "";
-              select.innerHTML += `<option value="${p.id}" style="color:#000" ${isSelected}>${p.nome}</option>`;
+              select.innerHTML += `<option value="${p.id}" style="color:#0f1f14; background:#fff;" ${isSelected}>${p.nome}</option>`;
             });
-
             const idParaCarregar = idSelecionadoViaURL
               ? idSelecionadoViaURL
               : dados.data.pacientes[0].id;
-            carregarDadosClinicos(idParaCarregar);
+            carregarDadosDoPacienteUnificado(idParaCarregar);
           } else {
             select.innerHTML =
-              '<option style="color:#000">Nenhum paciente</option>';
+              '<option style="color:#0f1f14;">Nenhum paciente</option>';
           }
         } catch (e) {
           console.error(e);
         }
+      }
+
+      function carregarDadosDoPacienteUnificado(idPaciente) {
+        carregarDadosClinicos(idPaciente);
+        carregarTiposFeridasExistentes();
+        carregarFeridasDoPaciente(idPaciente);
       }
 
       async function carregarDadosClinicos(idPaciente) {
@@ -229,9 +351,9 @@
           ) {
             destruirGrafico();
             document.getElementById("statusGrafico").innerText =
-              "Gráfico - Sem leituras registradas para este paciente.";
+              "Gráfico — Sem leituras registradas para este paciente.";
             document.getElementById("tabelaLeiturasCorpo").innerHTML =
-              '<tr><td colspan="4" style="text-align:center; color:#b0c4ba;">Nenhuma leitura encontrada. Ative o sensor acima para coletar dados.</td></tr>';
+              '<tr><td colspan="4" style="text-align:center; color:#b0c4ba; padding: 24px;">Nenhuma leitura encontrada. Ative o sensor acima para coletar dados.</td></tr>';
             return;
           }
 
@@ -286,43 +408,62 @@
                   {
                     label: "Temp (°C)",
                     data: temps,
-                    borderColor: "#ff6b6b",
-                    backgroundColor: "transparent",
+                    borderColor: "#e63946",
+                    backgroundColor: "rgba(230,57,70,0.06)",
                     tension: 0.3,
                     yAxisID: "yTemp",
+                    pointBackgroundColor: "#e63946",
+                    pointRadius: 4,
                   },
                   {
                     label: "Umid (%)",
                     data: umids,
-                    borderColor: "#4dadf7",
-                    backgroundColor: "transparent",
+                    borderColor: "#1d9e75",
+                    backgroundColor: "rgba(29,158,117,0.06)",
                     tension: 0.3,
                     yAxisID: "yUmid",
+                    pointBackgroundColor: "#1d9e75",
+                    pointRadius: 4,
                   },
                 ],
               },
               options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                plugins: {
+                  legend: {
+                    labels: {
+                      color: "#7a9186",
+                      font: { family: "DM Sans", size: 12 },
+                    },
+                  },
+                },
                 scales: {
                   yTemp: {
                     type: "linear",
                     position: "left",
+                    grid: { color: "#f0f4f2" },
+                    ticks: { color: "#7a9186" },
                     title: {
                       display: true,
                       text: "Temperatura °C",
-                      color: "#ff6b6b",
+                      color: "#e63946",
                     },
                   },
                   yUmid: {
                     type: "linear",
                     position: "right",
+                    grid: { drawOnChartArea: false },
+                    ticks: { color: "#7a9186" },
                     title: {
                       display: true,
                       text: "Umidade %",
-                      color: "#4dadf7",
+                      color: "#1d9e75",
                     },
-                    grid: { drawOnChartArea: false },
+                  },
+                  x: {
+                    grid: { color: "#f0f4f2" },
+                    ticks: { color: "#7a9186" },
                   },
                 },
               },
@@ -330,6 +471,94 @@
           }
         } catch (erro) {
           console.error("Erro gráfico:", erro);
+        }
+      }
+
+      async function carregarTiposFeridasExistentes() {
+        try {
+          const res = await fetch(
+            "http://localhost:8080/api/v1/tipos-feridas",
+            { headers: authHeaders },
+          );
+          const feridas = await res.json();
+          const select = document.getElementById("selectFeridasDisponiveis");
+          select.innerHTML = "";
+
+          if (Array.isArray(feridas) && feridas.length > 0) {
+            feridas.forEach((f) => {
+              select.innerHTML += `<option value="${f.id}" style="color:#0f1f14;">${f.nome}</option>`;
+            });
+          } else {
+            select.innerHTML =
+              '<option style="color:#7a9186;">Nenhuma ferida cadastrada</option>';
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      }
+
+      async function carregarFeridasDoPaciente(idPaciente) {
+        try {
+          const res = await fetch(
+            `http://localhost:8080/api/v1/pacientes-feridas/${idPaciente}`,
+            { headers: authHeaders },
+          );
+          const json = await res.json();
+          const feridasAtivas = json.data;
+
+          const container = document.getElementById("listaFeridasPaciente");
+          container.innerHTML = "";
+
+          if (Array.isArray(feridasAtivas) && feridasAtivas.length > 0) {
+            feridasAtivas.forEach((f) => {
+              container.innerHTML += `<span class="tag-ferida">⚠️ ${f.nome}</span>`;
+            });
+          } else {
+            container.innerHTML =
+              '<span style="color: #b0c4ba; font-size: 11px;">Nenhuma ferida associada a este prontuário.</span>';
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      }
+
+      async function vincularFeridaAoPacienteAtivo() {
+        const idPaciente = document.getElementById("selectPaciente").value;
+        const idTipoFerida = document.getElementById(
+          "selectFeridasDisponiveis",
+        ).value;
+
+        if (!idPaciente || !idTipoFerida) {
+          alert("Selecione um paciente e uma ferida válida!");
+          return;
+        }
+
+        try {
+          const res = await fetch(
+            "http://localhost:8080/api/v1/pacientes-feridas",
+            {
+              method: "POST",
+              headers: authHeaders,
+              body: JSON.stringify({
+                idPaciente: parseInt(idPaciente, 10),
+                idTipoFerida: parseInt(idTipoFerida, 10),
+              }),
+            },
+          );
+
+          const resultado = await res.json();
+
+          if (res.status === 201 || resultado.success || resultado.sucesso) {
+            alert("Ferida vinculada ao histórico do paciente com sucesso!");
+            carregarFeridasDoPaciente(idPaciente);
+          } else {
+            alert(
+              `Erro ao vincular: ${resultado.message || "Verifique os dados."}`,
+            );
+          }
+        } catch (e) {
+          console.error(e);
+          alert("Erro de comunicação com o servidor.");
         }
       }
     </script>

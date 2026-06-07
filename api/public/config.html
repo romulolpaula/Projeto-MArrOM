@@ -5,7 +5,108 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="dashboard.css" />
     <title>Configurações - Projeto MArrOM</title>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+
+    <style>
+      .secao-titulo {
+        grid-column: 1 / -1;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-top: 8px;
+        margin-bottom: -4px;
+      }
+      .secao-titulo span {
+        font-family: "Space Mono", monospace;
+        font-size: 9px;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: #1d9e75;
+        white-space: nowrap;
+      }
+      .secao-titulo::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: #d8e8df;
+      }
+
+      .card-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        background: #e8f5f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        margin-bottom: 14px;
+      }
+
+      .card-desc {
+        font-size: 12px;
+        color: #7a9186;
+        line-height: 1.7;
+        margin-bottom: 20px;
+      }
+
+      .btn-vincular:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .btn-vincular.importar {
+        background: #e8f5f0;
+        color: #0f6e56;
+        border: 1px solid #b8d8cc;
+      }
+      .btn-vincular.importar:hover {
+        background: #1d9e75;
+        color: #fff;
+        border-color: #1d9e75;
+      }
+
+      input[type="file"] {
+        width: 100%;
+        font-family: "DM Sans", sans-serif;
+        font-size: 12px;
+        color: #7a9186;
+        background: #f4f7f5;
+        border: 0.5px solid #d0ddd6;
+        border-radius: 8px;
+        padding: 10px 14px;
+        margin-bottom: 12px;
+        cursor: pointer;
+      }
+
+      .card-divider {
+        border: none;
+        border-top: 1px solid #d8e8df;
+        margin: 16px 0;
+      }
+
+      .btn-exportar-json {
+        display: block;
+        text-decoration: none;
+        text-align: center;
+        padding: 12px;
+        border-radius: 8px;
+        background: #1d9e75;
+        color: #fff;
+        font-family: "DM Sans", sans-serif;
+        font-size: 14px;
+        font-weight: 500;
+        margin-bottom: 16px;
+        transition: background 0.2s;
+      }
+      .btn-exportar-json:hover {
+        background: #0f6e56;
+      }
+    </style>
   </head>
+
   <body>
     <div class="container-geral">
       <aside class="sidebar">
@@ -22,48 +123,66 @@
           <p class="rodape-texto" id="syncConfig">Última sincronização: -</p>
         </div>
       </aside>
+
       <main class="principal">
         <header class="topo-dashboard">
           <h1>Configurações do Sistema</h1>
         </header>
+
         <section class="grid-pacientes">
+          <div class="secao-titulo"><span>Hardware &amp; Admissão</span></div>
+
+          <!-- Card 1: Conexão ESP32 -->
           <div class="card">
+            <div class="card-icon">🔌</div>
             <div class="status-linha">Parâmetros do Hardware</div>
-            <h3 style="margin-bottom: 20px">Conexão ESP32</h3>
-            <div style="margin-bottom: 15px">
-              <label class="status-linha" style="font-size: 9px"
-                >ID do Dispositivo</label
-              >
-              <input
-                type="text"
-                value="ESP32-UNIT-01"
-                class="resposta"
-                readonly
-              />
-            </div>
-            <div style="margin-bottom: 15px">
-              <label class="status-linha" style="font-size: 9px"
-                >Status da Conexão</label
-              >
-              <input
-                type="text"
-                id="statusSensor"
-                class="resposta"
-                value="Verificando..."
-                readonly
-              />
-            </div>
-            <div style="margin-bottom: 15px">
-              <label class="status-linha" style="font-size: 9px"
-                >Paciente Vinculado Agora</label
-              >
-              <input
-                type="text"
-                id="pacienteVinculado"
-                class="resposta"
-                value="Buscando..."
-                readonly
-              />
+            <h3>Conexão ESP32</h3>
+
+            <div
+              class="indicadores"
+              style="flex-direction: column; gap: 12px; margin-top: 16px"
+            >
+              <div>
+                <label
+                  class="status-linha"
+                  style="margin-bottom: 6px; display: block"
+                  >ID do Dispositivo</label
+                >
+                <input
+                  type="text"
+                  value="ESP32-UNIT-01"
+                  class="resposta"
+                  readonly
+                />
+              </div>
+              <div>
+                <label
+                  class="status-linha"
+                  style="margin-bottom: 6px; display: block"
+                  >Status da Conexão</label
+                >
+                <input
+                  type="text"
+                  id="statusSensor"
+                  class="resposta"
+                  value="Verificando..."
+                  readonly
+                />
+              </div>
+              <div>
+                <label
+                  class="status-linha"
+                  style="margin-bottom: 6px; display: block"
+                  >Paciente Vinculado Agora</label
+                >
+                <input
+                  type="text"
+                  id="pacienteVinculado"
+                  class="resposta"
+                  value="Buscando..."
+                  readonly
+                />
+              </div>
             </div>
             <button class="btn-vincular principal" onclick="verificarSensor()">
               Atualizar Status
@@ -71,38 +190,174 @@
           </div>
 
           <div class="card">
+            <div class="card-icon">🧑‍⚕️</div>
             <div class="status-linha">Admissão Hospitalar</div>
-            <h3 style="margin-bottom: 20px">Cadastrar Novo Paciente</h3>
-            <div style="margin-bottom: 15px">
-              <label class="status-linha" style="font-size: 9px"
-                >Nome Completo</label
-              >
-              <input
-                type="text"
-                id="nomePaciente"
-                class="resposta"
-                placeholder="Ex: Patrícia"
-                required
-              />
-            </div>
-            <div style="margin-bottom: 15px">
-              <label class="status-linha" style="font-size: 9px"
-                >Status de Monitoramento</label
-              >
-              <input
-                type="text"
-                id="statusPaciente"
-                class="resposta"
-                placeholder="Ex: Estável, Crítico, Observação"
-                required
-              />
+            <h3>Cadastrar Novo Paciente</h3>
+
+            <div
+              class="indicadores"
+              style="flex-direction: column; gap: 12px; margin-top: 16px"
+            >
+              <div>
+                <label
+                  class="status-linha"
+                  style="margin-bottom: 6px; display: block"
+                  >Nome Completo</label
+                >
+                <input
+                  type="text"
+                  id="nomePaciente"
+                  class="resposta"
+                  placeholder="Ex: Patrícia"
+                  required
+                />
+              </div>
+              <div>
+                <label
+                  class="status-linha"
+                  style="margin-bottom: 6px; display: block"
+                  >Status de Monitoramento</label
+                >
+                <input
+                  type="text"
+                  id="statusPaciente"
+                  class="resposta"
+                  placeholder="Ex: Estável, Crítico, Observação"
+                  required
+                />
+              </div>
             </div>
             <button
               class="btn-vincular principal"
-              style="width: 100%; cursor: pointer"
               onclick="cadastrarPaciente()"
             >
               Salvar Paciente
+            </button>
+          </div>
+
+          <div class="card">
+            <div class="card-icon">🩹</div>
+            <div class="status-linha">Classificação Clínica</div>
+            <h3>Cadastrar Tipo de Ferida</h3>
+
+            <div
+              class="indicadores"
+              style="flex-direction: column; gap: 12px; margin-top: 16px"
+            >
+              <div>
+                <label
+                  class="status-linha"
+                  style="margin-bottom: 6px; display: block"
+                  >Nome da Lesão</label
+                >
+                <input
+                  type="text"
+                  id="nomeFerida"
+                  class="resposta"
+                  placeholder="Ex: Úlcera por Pressão Grau II"
+                  required
+                />
+              </div>
+              <div>
+                <label
+                  class="status-linha"
+                  style="margin-bottom: 6px; display: block"
+                  >Descrição / Observações</label
+                >
+                <input
+                  type="text"
+                  id="descFerida"
+                  class="resposta"
+                  placeholder="Ex: Região sacral, monitorar umidade"
+                  required
+                />
+              </div>
+            </div>
+            <button
+              class="btn-vincular principal"
+              onclick="cadastrarTipoFerida()"
+            >
+              Salvar Tipo de Ferida
+            </button>
+          </div>
+
+          <div class="secao-titulo"><span>Dados &amp; Exportações</span></div>
+
+          <div class="card">
+            <div class="card-icon">💾</div>
+            <div class="status-linha">Manutenção e Dados</div>
+            <h3>Backup do Sistema</h3>
+
+            <div
+              class="indicadores"
+              style="
+                flex-direction: column;
+                gap: 0;
+                margin-top: 16px;
+                padding: 0;
+                background: transparent;
+              "
+            >
+              <a
+                href="http://localhost:8080/api/v1/backup/exportar"
+                class="btn-exportar-json"
+              >
+                Exportar Dados (.json)
+              </a>
+              <hr class="card-divider" />
+              <label
+                class="status-linha"
+                style="display: block; margin-bottom: 8px"
+                >Carga de Dados em Lote</label
+              >
+              <input type="file" id="arquivoJson" accept=".json" />
+              <button
+                class="btn-vincular importar"
+                onclick="importarDadosJSON()"
+              >
+                Importar Backup JSON
+              </button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-icon">📋</div>
+            <div class="status-linha">Auditoria do Sistema</div>
+            <h3>Exportar Logs em XML</h3>
+
+            <div class="indicadores" style="margin-top: 16px">
+              <p class="card-desc">
+                Gera um arquivo <strong>.xml</strong> com todos os registros de
+                auditoria do sistema.
+              </p>
+            </div>
+            <button
+              id="btnExportarXML"
+              class="btn-vincular principal"
+              onclick="exportarAuditoriaXML()"
+            >
+              Exportar Auditoria (.xml)
+            </button>
+          </div>
+
+          <div class="card">
+            <div class="card-icon">📄</div>
+            <div class="status-linha">Relatório</div>
+            <h3>Gerar Relatório PDF</h3>
+
+            <div class="indicadores" style="margin-top: 16px">
+              <p class="card-desc">
+                Consolida <strong>pacientes</strong> e
+                <strong>tipos de ferida</strong>
+                em um relatório.
+              </p>
+            </div>
+            <button
+              id="btnGerarPDF"
+              class="btn-vincular principal"
+              onclick="gerarRelatorioPDF()"
+            >
+              Gerar Relatório (.pdf)
             </button>
           </div>
         </section>
@@ -214,11 +469,10 @@
               method: "POST",
               headers: authHeaders,
               body: JSON.stringify({
-                paciente: { nome: nome, status_monitoramento: status },
+                paciente: { nome, status_monitoramento: status },
               }),
             },
           );
-
           const resultado = await resposta.json();
           if (resultado.success) {
             alert("Paciente cadastrado com sucesso!");
@@ -231,6 +485,398 @@
           console.error(erro);
           alert("Erro de comunicação com o servidor.");
         }
+      }
+
+      async function cadastrarTipoFerida() {
+        const nome = document.getElementById("nomeFerida").value;
+        const descricao = document.getElementById("descFerida").value;
+
+        if (!nome || !descricao) {
+          alert("Preencha todos os campos da ferida!");
+          return;
+        }
+
+        try {
+          const resposta = await fetch(
+            "http://localhost:8080/api/v1/tipos-feridas",
+            {
+              method: "POST",
+              headers: authHeaders,
+              body: JSON.stringify({ nome, descricao }),
+            },
+          );
+          const resultado = await resposta.json();
+          if (resposta.status === 201 || resultado.id) {
+            alert("Tipo de ferida cadastrado com sucesso!");
+            document.getElementById("nomeFerida").value = "";
+            document.getElementById("descFerida").value = "";
+          } else {
+            alert("Erro ao cadastrar ferida.");
+          }
+        } catch (erro) {
+          console.error(erro);
+          alert("Erro de comunicação com o servidor.");
+        }
+      }
+
+      async function importarDadosJSON() {
+        const input = document.getElementById("arquivoJson");
+        if (!input.files || input.files.length === 0) {
+          alert("Selecione um arquivo .json primeiro!");
+          return;
+        }
+
+        const arquivo = input.files[0];
+        const leitor = new FileReader();
+
+        leitor.onload = async function (e) {
+          try {
+            const dadosJson = JSON.parse(e.target.result);
+            const resposta = await fetch(
+              "http://localhost:8080/api/v1/backup/importar",
+              {
+                method: "POST",
+                headers: authHeaders,
+                body: JSON.stringify(dadosJson),
+              },
+            );
+            const resultado = await resposta.json();
+            if (resultado.success) {
+              alert(
+                `Sucesso! Inseridos: ${resultado.detalhes.pacientes_inseridos} pacientes e ${resultado.detalhes.feridas_inseridas} feridas.`,
+              );
+              input.value = "";
+            } else {
+              alert("Falha na importação: " + resultado.message);
+            }
+          } catch (err) {
+            alert("Erro ao ler ou processar arquivo JSON.");
+          }
+        };
+        leitor.readAsText(arquivo);
+      }
+
+      async function exportarAuditoriaXML() {
+        const token = localStorage.getItem("token") || tokenMarrom;
+        if (!token) {
+          alert("Token não encontrado. Faça login novamente.");
+          return;
+        }
+
+        const btn = document.getElementById("btnExportarXML");
+        btn.disabled = true;
+        btn.innerText = "Exportando...";
+
+        try {
+          const resposta = await fetch(
+            "http://localhost:8080/api/v1/logs/exportar-xml",
+            { method: "GET", headers: { Authorization: `Bearer ${token}` } },
+          );
+
+          if (!resposta.ok) {
+            const erro = await resposta.text();
+            alert(`Erro HTTP ${resposta.status}: ${erro}`);
+            return;
+          }
+
+          const blob = await resposta.blob();
+          const urlBlob = URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.href = urlBlob;
+          link.download = "logs_auditoria.xml";
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          setTimeout(() => URL.revokeObjectURL(urlBlob), 5000);
+
+          alert("Auditoria XML exportada com sucesso!");
+        } catch (erro) {
+          console.error("Erro na exportação XML:", erro);
+          alert("Falha na comunicação com o servidor.");
+        } finally {
+          btn.disabled = false;
+          btn.innerText = "Exportar Auditoria (.xml)";
+        }
+      }
+
+      async function gerarRelatorioPDF() {
+        const token = localStorage.getItem("token") || tokenMarrom;
+
+        const btn = document.getElementById("btnGerarPDF");
+        btn.disabled = true;
+        btn.innerText = "Gerando PDF...";
+
+        let pacientes = [];
+        let tiposFeridas = [];
+
+        try {
+          const [resPacientes, resFeridas] = await Promise.all([
+            fetch("http://localhost:8080/api/v1/pacientes", {
+              headers: { Authorization: `Bearer ${token}` },
+            }),
+            fetch("http://localhost:8080/api/v1/tipos-feridas", {
+              headers: { Authorization: `Bearer ${token}` },
+            }),
+          ]);
+          const dadosPacientes = await resPacientes.json();
+          const dadosFeridas = await resFeridas.json();
+
+          if (dadosPacientes.success) {
+            const raw = dadosPacientes.data.pacientes;
+            pacientes = Array.isArray(raw) ? raw : [raw];
+          }
+          if (dadosFeridas.success) {
+            const raw = dadosFeridas.data || [];
+            tiposFeridas = Array.isArray(raw) ? raw : [];
+          } else if (Array.isArray(dadosFeridas)) {
+            tiposFeridas = dadosFeridas;
+          }
+        } catch (erro) {
+          console.warn("API offline - usando dados de demonstração.", erro);
+          pacientes = [
+            {
+              id: 1,
+              nome: "Patrícia Oliveira",
+              status_monitoramento: "Estável",
+            },
+            { id: 2, nome: "Carlos Mendes", status_monitoramento: "Crítico" },
+            { id: 3, nome: "Ana Lima", status_monitoramento: "Observação" },
+          ];
+          tiposFeridas = [
+            {
+              id: 1,
+              nome: "Úlcera por Pressão Grau II",
+              descricao: "Região sacral, monitorar umidade",
+            },
+            {
+              id: 2,
+              nome: "Ferida Cirúrgica",
+              descricao: "Pós-operatório, troca de curativo diária",
+            },
+          ];
+        }
+
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({
+          orientation: "portrait",
+          unit: "mm",
+          format: "a4",
+        });
+
+        const COR_VERDE = [29, 158, 117];
+        const COR_VERDE_ESC = [15, 110, 86];
+        const COR_FUNDO = [244, 247, 245];
+        const COR_TEXTO = [15, 31, 20];
+        const COR_TEXTO_MED = [122, 145, 134];
+        const COR_BRANCO = [255, 255, 255];
+        const COR_LINHA = [216, 232, 223];
+
+        const largPagina = 210;
+        const margem = 14;
+        const dataHoje = new Date().toLocaleDateString("pt-BR", {
+          day: "2-digit",
+          month: "long",
+          year: "numeric",
+        });
+        const horaHoje = new Date().toLocaleTimeString("pt-BR", {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+
+        doc.setFillColor(...COR_VERDE_ESC);
+        doc.rect(0, 0, largPagina, 32, "F");
+        doc.setFillColor(...COR_VERDE);
+        doc.rect(0, 26, largPagina, 6, "F");
+
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(18);
+        doc.setTextColor(...COR_BRANCO);
+        doc.text("PROJETO MArrOM", margem, 13);
+
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(9);
+        doc.setTextColor(184, 232, 210);
+        doc.text(
+          "Sistema de Monitoramento de Feridas - Relatório Gerencial",
+          margem,
+          20,
+        );
+
+        doc.setFontSize(8);
+        doc.setTextColor(...COR_BRANCO);
+        doc.text(
+          `Gerado em: ${dataHoje} às ${horaHoje}`,
+          largPagina - margem,
+          13,
+          { align: "right" },
+        );
+        doc.text("ESP32-UNIT-01 - Ambiente Clínico", largPagina - margem, 20, {
+          align: "right",
+        });
+
+        let cursorY = 42;
+
+        doc.setFillColor(...COR_FUNDO);
+        doc.roundedRect(
+          margem,
+          cursorY - 6,
+          largPagina - margem * 2,
+          12,
+          2,
+          2,
+          "F",
+        );
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(10);
+        doc.setTextColor(...COR_VERDE_ESC);
+        doc.text("RESUMO DO SISTEMA", margem + 4, cursorY + 1);
+        cursorY += 14;
+
+        const blocos = [
+          { label: "Total de Pacientes", valor: String(pacientes.length) },
+          { label: "Tipos de Feridas", valor: String(tiposFeridas.length) },
+          { label: "Dispositivo Ativo", valor: "ESP32-UNIT-01" },
+          { label: "Status do Sistema", valor: "Operacional" },
+        ];
+        const largBloco = (largPagina - margem * 2 - 6) / 4;
+        blocos.forEach((b, i) => {
+          const x = margem + i * (largBloco + 2);
+          doc.setFillColor(...COR_VERDE);
+          doc.roundedRect(x, cursorY, largBloco, 18, 2, 2, "F");
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(13);
+          doc.setTextColor(...COR_BRANCO);
+          doc.text(b.valor, x + largBloco / 2, cursorY + 9, {
+            align: "center",
+          });
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(6.5);
+          doc.setTextColor(184, 232, 210);
+          doc.text(b.label, x + largBloco / 2, cursorY + 15, {
+            align: "center",
+          });
+        });
+        cursorY += 26;
+
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(10);
+        doc.setTextColor(...COR_VERDE_ESC);
+        doc.text("PACIENTES CADASTRADOS", margem, cursorY);
+        cursorY += 4;
+
+        doc.autoTable({
+          startY: cursorY,
+          head: [["#", "Nome do Paciente", "Status de Monitoramento"]],
+          body:
+            pacientes.length > 0
+              ? pacientes.map((p, i) => [
+                  String(p.id || i + 1),
+                  p.nome || "-",
+                  p.status_monitoramento || "-",
+                ])
+              : [["-", "Nenhum paciente cadastrado", "-"]],
+          margin: { left: margem, right: margem },
+          styles: {
+            fontSize: 9,
+            cellPadding: 4,
+            textColor: COR_TEXTO,
+            lineColor: COR_LINHA,
+            lineWidth: 0.2,
+          },
+          headStyles: {
+            fillColor: COR_VERDE_ESC,
+            textColor: COR_BRANCO,
+            fontStyle: "bold",
+            fontSize: 9,
+          },
+          alternateRowStyles: { fillColor: COR_FUNDO },
+          columnStyles: {
+            0: { cellWidth: 14, halign: "center" },
+            1: { cellWidth: 90 },
+            2: { cellWidth: "auto" },
+          },
+          didParseCell(data) {
+            if (data.section === "body" && data.column.index === 2) {
+              const s = (data.cell.raw || "").toLowerCase();
+              if (s.includes("crít"))
+                data.cell.styles.textColor = [192, 57, 43];
+              else if (s.includes("está"))
+                data.cell.styles.textColor = [15, 110, 86];
+              else if (s.includes("obser"))
+                data.cell.styles.textColor = [211, 84, 0];
+              data.cell.styles.fontStyle = "bold";
+            }
+          },
+        });
+
+        cursorY = doc.lastAutoTable.finalY + 10;
+        if (cursorY > 230) {
+          doc.addPage();
+          cursorY = 20;
+        }
+
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(10);
+        doc.setTextColor(...COR_VERDE_ESC);
+        doc.text("TIPOS DE FERIDA CADASTRADOS", margem, cursorY);
+        cursorY += 4;
+
+        doc.autoTable({
+          startY: cursorY,
+          head: [["#", "Nome da Lesão", "Descrição / Observações"]],
+          body:
+            tiposFeridas.length > 0
+              ? tiposFeridas.map((f, i) => [
+                  String(f.id || i + 1),
+                  f.nome || "-",
+                  f.descricao || "-",
+                ])
+              : [["-", "Nenhum tipo de ferida cadastrado", "-"]],
+          margin: { left: margem, right: margem },
+          styles: {
+            fontSize: 9,
+            cellPadding: 4,
+            textColor: COR_TEXTO,
+            lineColor: COR_LINHA,
+            lineWidth: 0.2,
+          },
+          headStyles: {
+            fillColor: COR_VERDE_ESC,
+            textColor: COR_BRANCO,
+            fontStyle: "bold",
+            fontSize: 9,
+          },
+          alternateRowStyles: { fillColor: COR_FUNDO },
+          columnStyles: {
+            0: { cellWidth: 14, halign: "center" },
+            1: { cellWidth: 75 },
+            2: { cellWidth: "auto" },
+          },
+        });
+
+        const totalPaginas = doc.internal.getNumberOfPages();
+        for (let i = 1; i <= totalPaginas; i++) {
+          doc.setPage(i);
+          doc.setDrawColor(...COR_LINHA);
+          doc.setLineWidth(0.3);
+          doc.line(margem, 285, largPagina - margem, 285);
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(7);
+          doc.setTextColor(...COR_TEXTO_MED);
+          doc.text(
+            "Projeto MArrOM: Sistema de Monitoramento de Feridas",
+            margem,
+            290,
+          );
+          doc.text(`Página ${i} de ${totalPaginas}`, largPagina - margem, 290, {
+            align: "right",
+          });
+        }
+
+        doc.save("relatorio_sistema.pdf");
+
+        btn.disabled = false;
+        btn.innerText = "Gerar Relatório (.pdf)";
       }
     </script>
   </body>

@@ -1,10 +1,12 @@
+const IService = require("../interfaces/IService");
 const LeituraDAO = require("../dao/LeituraDAO");
 const Leitura = require("../model/Leitura");
 
-module.exports = class LeituraService {
+module.exports = class LeituraService extends IService {
   #leituraDAO;
 
   constructor(leituraDAODependency) {
+    super();
     console.log("LeituraService.constructor()");
     this.#leituraDAO = leituraDAODependency;
   }
@@ -35,5 +37,21 @@ module.exports = class LeituraService {
     leituraValidacao.idPaciente = idPaciente;
 
     return this.#leituraDAO.findRecentByPaciente(leituraValidacao.idPaciente);
+  };
+
+  create = async (dados) => {
+    return await this.createLeitura(dados);
+  };
+  findById = async (id) => {
+    return await this.findRecentByPaciente(id);
+  };
+  findAll = async () => {
+    return [];
+  };
+  update = async (id, dados) => {
+    return true;
+  };
+  delete = async (id) => {
+    return true;
   };
 };

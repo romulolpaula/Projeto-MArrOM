@@ -1,9 +1,11 @@
+const IController = require("../interfaces/IController");
 const LeituraService = require("../service/LeituraService");
 
-module.exports = class LeituraControl {
+module.exports = class LeituraControl extends IController {
   #leituraService;
 
   constructor(leituraServiceDependency) {
+    super();
     console.log("LeituraControl.constructor()");
     this.#leituraService = leituraServiceDependency;
   }
@@ -61,5 +63,15 @@ module.exports = class LeituraControl {
     } catch (error) {
       next(error);
     }
+  };
+
+  index = async (request, response, next) => {
+    response.status(501).send();
+  };
+  update = async (request, response, next) => {
+    response.status(501).send();
+  };
+  destroy = async (request, response, next) => {
+    response.status(501).send();
   };
 };

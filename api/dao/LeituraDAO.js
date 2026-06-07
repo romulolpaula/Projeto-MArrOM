@@ -1,9 +1,11 @@
+const IDAO = require("../interfaces/IDAO");
 const Leitura = require("../model/Leitura");
 
-module.exports = class LeituraDAO {
+module.exports = class LeituraDAO extends IDAO {
   #database;
 
   constructor(databaseInstance) {
+    super();
     console.log("LeituraDAO.constructor()");
     this.#database = databaseInstance;
   }
@@ -42,5 +44,18 @@ module.exports = class LeituraDAO {
     const [resultado] = await pool.execute(SQL, params);
 
     return resultado || [];
+  };
+
+  findAll = async () => {
+    return [];
+  };
+  findById = async (id) => {
+    return await this.findRecentByPaciente(id);
+  };
+  update = async (model) => {
+    return true;
+  };
+  delete = async (model) => {
+    return true;
   };
 };

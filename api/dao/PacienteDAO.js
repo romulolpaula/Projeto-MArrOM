@@ -1,9 +1,11 @@
+const IDAO = require("../interfaces/IDAO");
 const Paciente = require("../model/Paciente");
 
-module.exports = class PacienteDAO {
+module.exports = class PacienteDAO extends IDAO {
   #database;
 
   constructor(databaseInstance) {
+    super();
     console.log("PacienteDAO.constructor()");
     this.#database = databaseInstance;
   }
@@ -11,8 +13,12 @@ module.exports = class PacienteDAO {
   create = async (objPacienteModel) => {
     console.log("PacienteDAO.create()");
 
-    const SQL = "INSERT INTO pacientes (nome) VALUES (?);";
-    const params = [objPacienteModel.nome];
+    const SQL =
+      "INSERT INTO pacientes (nome, status_monitoramento) VALUES (?, ?);";
+    const params = [
+      objPacienteModel.nome,
+      objPacienteModel.status_monitoramento ?? false,
+    ];
 
     const pool = await this.#database.getPool();
     const [resultado] = await pool.execute(SQL, params);

@@ -1,9 +1,11 @@
+const IService = require("../interfaces/IService");
 const Usuario = require("../model/Usuario");
 
-module.exports = class UsuarioService {
+module.exports = class UsuarioService extends IService {
   #usuarioDAO;
 
   constructor(usuarioDAODependency) {
+    super();
     console.log("UsuarioService.constructor()");
     this.#usuarioDAO = usuarioDAODependency;
   }
@@ -33,5 +35,21 @@ module.exports = class UsuarioService {
     usuarioAutenticado.email = dadosBanco.email;
 
     return usuarioAutenticado;
+  };
+
+  create = async (dados) => {
+    return true;
+  };
+  findAll = async () => {
+    return [];
+  };
+  findById = async (id) => {
+    return null;
+  };
+  update = async (id, dados) => {
+    return true;
+  };
+  delete = async (id) => {
+    return true;
   };
 };

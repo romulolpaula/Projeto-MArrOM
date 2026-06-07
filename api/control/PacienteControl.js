@@ -1,9 +1,11 @@
+const IController = require("../interfaces/IController");
 const PacienteService = require("../service/PacienteService");
 
-module.exports = class PacienteControl {
+module.exports = class PacienteControl extends IController {
   #pacienteService;
 
   constructor(pacienteServiceDependency) {
+    super();
     console.log("PacienteControl.constructor()");
     this.#pacienteService = pacienteServiceDependency;
   }
@@ -74,5 +76,12 @@ module.exports = class PacienteControl {
     } catch (error) {
       next(error);
     }
+  };
+
+  update = async (request, response, next) => {
+    response.status(501).send();
+  };
+  destroy = async (request, response, next) => {
+    response.status(501).send();
   };
 };

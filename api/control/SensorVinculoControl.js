@@ -1,9 +1,11 @@
+const IController = require("../interfaces/IController");
 const SensorVinculoService = require("../service/SensorVinculoService");
 
-module.exports = class SensorVinculoControl {
+module.exports = class SensorVinculoControl extends IController {
   #sensorVinculoService;
 
   constructor(sensorVinculoServiceDependency) {
+    super();
     console.log("SensorVinculoControl.constructor()");
     this.#sensorVinculoService = sensorVinculoServiceDependency;
   }
@@ -62,5 +64,15 @@ module.exports = class SensorVinculoControl {
     } catch (error) {
       next(error);
     }
+  };
+
+  index = async (request, response, next) => {
+    response.status(501).send();
+  };
+  store = async (request, response, next) => {
+    response.status(501).send();
+  };
+  destroy = async (request, response, next) => {
+    response.status(501).send();
   };
 };
