@@ -7,7 +7,7 @@ module.exports = class MongoDatabase {
   #uri;
   #dbName;
 
-  constructor(uri = "mongodb://localhost:27017", dbName = "marrom_logs") {
+  constructor(uri = "mongodb://localhost:27017", dbName = "nome do banco") {
     this.#uri = uri;
     this.#dbName = dbName;
   }

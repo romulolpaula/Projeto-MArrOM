@@ -12,8 +12,7 @@ module.exports = class MeuTokenJWT {
   #payload;
 
   constructor() {
-    this.#key =
-      "x9S4q0v+V0IjvHkG20uAxaHx1ijj+q1HWjHKv+ohxp/oK+77qyXkVj/l4QYHHTF3";
+    this.#key = "CHAVE_SECRETA_GENERICA_PARA_DESENVOLVIMENTO_LOCAL_UNIVAP_2026";
     this.#alg = "HS256";
     this.#type = "JWT";
     this.#iss = "http://localhost";

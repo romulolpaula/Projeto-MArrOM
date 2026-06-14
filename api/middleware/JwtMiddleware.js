@@ -2,9 +2,7 @@ const MeuTokenJWT = require("../http/MeuTokenJWT");
 
 module.exports = class JwtMiddleware {
   validateToken = (request, response, next) => {
-    console.log(
-      "JwtMiddleware.validateToken() -> [Ignorado temporariamente para testes]",
-    );
+    console.log("JwtMiddleware.validateToken() -> []");
 
     const authorization = request.headers.authorization;
     const jwt = new MeuTokenJWT();

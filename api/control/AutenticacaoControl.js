@@ -6,7 +6,7 @@ module.exports = class AutenticacaoControl extends IController {
   #logService;
 
   constructor(usuarioServiceDependency, logServiceDependency = null) {
-    super(); // Adicionado para cumprir o contrato
+    super();
     console.log("AuthControl.constructor()");
     this.#usuarioService = usuarioServiceDependency;
     this.#logService = logServiceDependency;

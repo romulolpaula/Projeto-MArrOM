@@ -24,7 +24,7 @@ module.exports = class PacienteRoteador {
 
     this.#router.post(
       "/",
-      // this.#jwtMiddleware.validateToken,
+      this.#jwtMiddleware.validateToken,
       this.#pacienteMiddleware.validateBody,
       this.#pacienteControl.store,
     );

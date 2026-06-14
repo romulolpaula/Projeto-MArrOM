@@ -1,5 +1,4 @@
 module.exports = class PacienteFerida {
-  // Atributos privados conforme os slides do professor
   #idPaciente;
   #idTipoFerida;
   #fotoEvolucao;

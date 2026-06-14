@@ -13,10 +13,10 @@ module.exports = class MysqlDatabase {
   #queueLimit;
 
   constructor(config = {}) {
-    this.#host = config.host || "127.0.0.1";
+    this.#host = config.host || "localhost";
     this.#user = config.user || "root";
     this.#password = config.password || "";
-    this.#database = config.database || "marrom_sistemadeacompanhamento";
+    this.#database = config.database || "marrom_db";
     this.#port = config.port || 3306;
     this.#waitForConnections = config.waitForConnections ?? true;
     this.#connectionLimit = config.connectionLimit || 10;
