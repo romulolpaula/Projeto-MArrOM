@@ -1,42 +1,53 @@
-CREATE DATABASE IF NOT EXISTS marrom_sistemadeacompanhamento
-  DEFAULT CHARACTER SET utf8mb4
-  DEFAULT COLLATE utf8mb4_unicode_ci;
+CREATE TABLE `usuarios` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `nome` varchar(255) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `senha` varchar(255) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `email` (`email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-USE marrom_sistemadeacompanhamento;
+CREATE TABLE `pacientes` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `nome` varchar(255) NOT NULL,
+  `status_monitoramento` varchar(100) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+CREATE TABLE `tipos_feridas` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `nome` varchar(100) NOT NULL,
+  `descricao` text DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `nome` (`nome`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-CREATE TABLE IF NOT EXISTS usuarios (
-  id    INT          AUTO_INCREMENT PRIMARY KEY,
-  nome  VARCHAR(255) NOT NULL,
-  email VARCHAR(255) NOT NULL UNIQUE,
-  senha VARCHAR(255) NOT NULL
-);
+CREATE TABLE `pacientes_feridas` (
+  `id_paciente` int(11) NOT NULL,
+  `id_tipo_ferida` int(11) NOT NULL,
+  `foto_evolucao` varchar(255) DEFAULT NULL,
+  `data_registro` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id_paciente`,`id_tipo_ferida`),
+  CONSTRAINT `pacientes_feridas_ibfk_1` FOREIGN KEY (`id_paciente`) REFERENCES `pacientes` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `pacientes_feridas_ibfk_2` FOREIGN KEY (`id_tipo_ferida`) REFERENCES `tipos_feridas` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+CREATE TABLE `sensores_vinculo` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id_sensor` varchar(100) NOT NULL,
+  `id_paciente_atual` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `id_sensor` (`id_sensor`),
+  CONSTRAINT `sensores_vinculo_ibfk_1` FOREIGN KEY (`id_paciente_atual`) REFERENCES `pacientes` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-CREATE TABLE IF NOT EXISTS pacientes (
-  id                    INT          AUTO_INCREMENT PRIMARY KEY,
-  nome                  VARCHAR(255) NOT NULL,
-  status_monitoramento  VARCHAR(100)
-);
-
-CREATE TABLE IF NOT EXISTS sensores_vinculo (
-  id                 INT          AUTO_INCREMENT PRIMARY KEY,
-  id_sensor          VARCHAR(100) NOT NULL UNIQUE,
-  id_paciente_atual  INT,
-  FOREIGN KEY (id_paciente_atual) REFERENCES pacientes(id)
-);
-
-CREATE TABLE IF NOT EXISTS leituras (
-  id           INT            AUTO_INCREMENT PRIMARY KEY,
-  id_sensor    VARCHAR(100),
-  id_paciente  INT            NOT NULL,
-  temperatura  DECIMAL(5,2)   NOT NULL,
-  umidade      DECIMAL(5,2)   NOT NULL,
-  data_hora    DATETIME       DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (id_paciente) REFERENCES pacientes(id)
-);
-
-INSERT INTO sensores_vinculo (id_sensor, id_paciente_atual)
-VALUES ('ESP32-UNIT-01', NULL);
-
-INSERT INTO usuarios (nome, email, senha) VALUES ('ADMIN', 'admin@hospital.com', '123456');
+CREATE TABLE `leituras` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id_sensor` varchar(100) DEFAULT NULL,
+  `id_paciente` int(11) NOT NULL,
+  `temperatura` decimal(5,2) NOT NULL,
+  `umidade` decimal(5,2) NOT NULL,
+  `data_hora` datetime DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  CONSTRAINT `leituras_ibfk_1` FOREIGN KEY (`id_paciente`) REFERENCES `pacientes` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
