@@ -43,22 +43,19 @@ Sistema de Internet das Coisas (IoT) para monitoramento remoto e não-invasivo d
 * MongoDB Community Server
 
 ### 2. Instalação e Execução
+
 ```bash
-# 1. Clone o repositório
+# 1. Clone o repositório e navegue até a pasta
 git clone [https://github.com/romulolpaula/Projeto-MArrOM](https://github.com/romulolpaula/Projeto-MArrOM)
 cd Projeto-MArrOM
 
-# 2. Instale as dependências
+# 2. Instale as dependências do Node.js
 npm install
 
-# 3. Configure o arquivo .env na raiz
-PORT=8080
-DB_HOST=localhost
-DB_USER=root
-DB_PASS=
-DB_NAME=marrom_db
-JWT_SECRET=sua_chave_secreta
-MONGO_URI=mongodb://localhost:27017/marrom_db
+# 3. Configure o Banco de Dados Relacional
+# Inicie o módulo MySQL no XAMPP e importe o script de tabelas no phpMyAdmin
 
-# 4. Configure o banco relacional
-# Inicie o MySQL no XAMPP e importe o arquivo 'script_banco.
+# 4. Inicialize o ecossistema (Rode cada comando em um terminal separado)
+node Server.js        # Inicializa o servidor base do sistema
+node app.js           # Inicializa a API Express e conexões com os bancos
+node monitor_mqtt.js  # Inicializa o escutador de telemetria do ESP32
