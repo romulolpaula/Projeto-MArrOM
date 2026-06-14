@@ -17,7 +17,7 @@ Sistema de Internet das Coisas (IoT) para monitoramento remoto e não-invasivo d
 
 ---
 
-## Estrutura de Dados (Persistência Dupla)
+## Estrutura de Dados
 
 * **MySQL (Transacional):** Armazena dados de negócio normalizados (3FN). Tabelas: `pacientes`, `tipos_feridas`, `pacientes_feridas` (Vínculo N:N com Chave Primária Composta contra duplicidade) e `leituras_sensores`.
 * **MongoDB (Auditoria/NoSQL):** Caixa-preta de alta performance para logs flexíveis (`LOGIN_SUCESSO`, `ACESSO_ROTA`, `ERRO`).
