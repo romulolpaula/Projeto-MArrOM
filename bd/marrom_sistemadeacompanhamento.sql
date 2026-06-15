@@ -51,3 +51,83 @@ CREATE TABLE `leituras` (
   PRIMARY KEY (`id`),
   CONSTRAINT `leituras_ibfk_1` FOREIGN KEY (`id_paciente`) REFERENCES `pacientes` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- =====================
+-- USUÁRIOS
+-- =====================
+
+INSERT INTO usuarios (nome, email, senha) VALUES
+('Ana Silva', 'ana.silva@email.com', '123456'),
+('Carlos Souza', 'carlos.souza@email.com', 'senha123'),
+('Juliana Lima', 'juliana.lima@email.com', 'abc123'),
+('Pedro Oliveira', 'pedro.oliveira@email.com', 'teste321'),
+('Mariana Costa', 'mariana.costa@email.com', 'admin123');
+
+
+-- =====================
+-- PACIENTES
+-- =====================
+
+INSERT INTO pacientes (nome, status_monitoramento) VALUES
+('José Ferreira', 'Monitoramento Ativo'),
+('Fernanda Gomes', 'Estável'),
+('Lucas Martins', 'Necessita Atenção'),
+('Camila Rocha', 'Monitoramento Ativo'),
+('Roberto Almeida', 'Alta Prevista');
+
+
+-- =====================
+-- TIPOS DE FERIDAS
+-- =====================
+
+INSERT INTO tipos_feridas (nome, descricao) VALUES
+('Úlcera por Pressão', 'Ferida causada por pressão contínua na pele'),
+('Queimadura', 'Lesão causada por calor ou substâncias químicas'),
+('Ferida Cirúrgica', 'Ferida resultante de procedimento cirúrgico'),
+('Escoriação', 'Lesão superficial na pele'),
+('Pé Diabético', 'Complicação causada por diabetes');
+
+
+-- =====================
+-- PACIENTES_FERIDAS
+-- (usa ids existentes)
+-- =====================
+
+INSERT INTO pacientes_feridas
+(id_paciente, id_tipo_ferida, foto_evolucao)
+VALUES
+(1, 1, 'jose_pressao_01.jpg'),
+(1, 4, 'jose_escoriacao.jpg'),
+(2, 3, 'fernanda_cirurgia.jpg'),
+(3, 5, 'lucas_pe_diabetico.jpg'),
+(4, 2, 'camila_queimadura.jpg');
+
+
+-- =====================
+-- SENSORES VÍNCULO
+-- =====================
+
+INSERT INTO sensores_vinculo
+(id_sensor, id_paciente_atual)
+VALUES
+('ESP32_001', 1),
+('ESP32_002', 2),
+('ESP32_003', 3),
+('ESP32_004', 4),
+('ESP32_005', NULL);
+
+
+-- =====================
+-- LEITURAS
+-- =====================
+
+INSERT INTO leituras
+(id_sensor, id_paciente, temperatura, umidade, data_hora)
+VALUES
+('ESP32_001', 1, 36.50, 62.00, NOW()),
+('ESP32_001', 1, 36.80, 64.50, NOW()),
+('ESP32_002', 2, 37.10, 58.30, NOW()),
+('ESP32_003', 3, 38.20, 70.10, NOW()),
+('ESP32_004', 4, 35.90, 55.20, NOW()),
+('ESP32_002', 2, 36.70, 61.00, NOW()),
+('ESP32_003', 3, 37.50, 68.20, NOW());
